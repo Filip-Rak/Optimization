@@ -72,7 +72,7 @@ void lab0()
 
 void lab1()
 {
-	// Shared arguments
+	// Common arguments
 	double epsilon = 1e-05;
 	int n_max = 1000;
 
@@ -86,14 +86,16 @@ void lab1()
 	// File output
 	const char delimiter = ';';
 	const string OUTPUT_PATH = "Output/";
-	ofstream exp_file(OUTPUT_PATH + "out_exp.txt");
-	ofstream fib_file(OUTPUT_PATH + "out_fib.txt");
-	ofstream lag_file(OUTPUT_PATH + "out_lag.txt");
+	ofstream exp_file(OUTPUT_PATH + "out_1_1_exp.txt");
+	ofstream fib_file(OUTPUT_PATH + "out_1_2_fib.txt");
+	ofstream lag_file(OUTPUT_PATH + "out_1_3_lag.txt");
+
+
+	// ---------- Table 1 and Table 2 ----------
 
 	// Init random number generator
 	srand(time(NULL));
 
-	// Table 1 and Table 2
 	for (int i = 0; i < 100; i++)
 	{
 		// Narrow the range using expansion with random x0
@@ -130,50 +132,59 @@ void lab1()
 	fib_file.close();
 	lag_file.close();
 
-	// Table 3
-}
+	// ---------- Graph ----------
+	
+	// Open new files for output
+	fib_file.open(OUTPUT_PATH + "out_2_1_fib.txt");
+	lag_file.open(OUTPUT_PATH + "out_2_2_lag.txt");
 
-void lab1_1()
-{
-	// Shared arguments
-	double epsilon = 0.001;
-	int Nmax = 1000000;
+	// Fixed range
+	double a = -100, b = 100;
 
-	// Expansion Method
-	double x0 = 30, d = 2, alpha = 2;
-	double* p = expansion(ff1T, x0, d, alpha, Nmax);
-
-	std::cout << " ( " << p[0] << " ; " << p[1] << " );\n";
-
-	// Fibonacci's Method
+	// Fibonacci function call
 	solution::clear_calls();
+	solution fib_result = fib(ff1T, a, b, epsilon);
+	fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y)
+		<< delimiter << solution::f_calls << delimiter << fib_result.flag
+		<< delimiter << "\n\n" << fib_result.ud << "\n";
 
-	std::cout << "-------- Metoda Fibonacciego --------" << "\n";
-	std::cout << fib(ff1T, p[0], p[1], epsilon) << "\n";
-
-	// Method based on Lagrange's Interpolation
+	// Lagrange Functions call
 	solution::clear_calls();
-	double gamma = 1;
+	solution lag_result = lag(ff1T, a, b, epsilon, gamma, n_max);
+	lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y)
+		<< delimiter << solution::f_calls << delimiter << lag_result.flag
+		<< delimiter << "\n\n" << lag_result.ud << "\n";
 
-	std::cout << "-------- Metoda oparta na interpolacji Lagrange'a --------" << "\n";
-	std::cout << lag(ff1T, p[0], p[1], epsilon, gamma, Nmax) << "\n";
-	/*
-		std::cout << "-------- P A I N --------" << "\n";
+	// Close the files
+	fib_file.close();
+	lag_file.close();
 
-		solution fib_2 = fib(simulate_flow_temp, 1e-4, 1e-2, 1e-5);
+	// ---------- Table 3 ----------
 
-		// va, vb, tb
-		matrix Y0_1 = matrix(3, new double[3] {5, 1, 20});
-		matrix* Yz1 = solve_ode(flow_and_temp, 0, 1, 2000, Y0_1, NULL, 0.005); // 0.005 = DA= 50CM
-		std::cout << Yz1[1] << "\n";
+	// Open new files
+	fib_file.open(OUTPUT_PATH + "out_3_1_fib.txt");
+	lag_file.open(OUTPUT_PATH + "out_3_2_lag.txt");
 
-		std::cout << "-------- P A I N 2 --------" << "\n";
-		std::cout << "it fucking sucks: " << Yz1[1] << "\n";
-	*/
-	// solution opt = fib(simulate_flow_temp, -100, 100, epsilon, NULL, NULL);
-	// std:cout << opt << "\n";
+	double x0 = 1 + 100 / 2;
+	double x0 = 1;
 
-	delete[] p;
+	// Call expansion
+	double* range = expansion(simulate_flow_temp, x0, d, alpha, n_max);
+	std::cout << range[0] << " " << range[1];
+
+	// Call Fibonacci
+	solution::clear_calls();
+	fib_result = fib(simulate_flow_temp, range[0], range[1], epsilon);
+	fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+
+	// Call Lagrange
+	solution::clear_calls();
+	lag_result = lag(simulate_flow_temp, range[0], range[1], epsilon, gamma, n_max);
+	lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+
+	// Close the files
+	fib_file.close();
+	lag_file.close();
 }
 
 void lab2()
