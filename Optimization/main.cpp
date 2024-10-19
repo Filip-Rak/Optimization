@@ -101,21 +101,24 @@ void lab1()
 		double* range = expansion(ff1T, x0, d, alpha, n_max);
 
 		if (exp_file.is_open())
-			exp_file << x0 << delimiter << range[0] << delimiter << range[1] << ";" << solution::f_calls << delimiter << "\n";
+			exp_file << x0 << delimiter << range[0] << delimiter << range[1] 
+			<< delimiter << solution::f_calls << delimiter << "\n";
 		
 		// Use Fibonnaci's method
 		solution::clear_calls();
 		solution fib_result = fib(ff1T, range[0], range[1], epsilon);
 
 		if (fib_file.is_open())
-			fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+			fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) 
+			<< delimiter << solution::f_calls << delimiter << fib_result.flag  << delimiter << "\n";
 
 		// Use Lagrange's method
 		solution::clear_calls();
 		solution lag_result = lag(ff1T, range[0], range[1], epsilon, gamma, n_max);
 
 		if (lag_file.is_open())
-			lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+			lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) 
+			<< delimiter << solution::f_calls << delimiter << lag_result.flag << delimiter<< "\n";
 
 
 		// Deallocate memory
@@ -126,6 +129,8 @@ void lab1()
 	exp_file.close();
 	fib_file.close();
 	lag_file.close();
+
+	// Table 3
 }
 
 void lab1_1()
