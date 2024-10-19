@@ -265,7 +265,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 		Xopt.y = di.y;
 		
 		Xopt.fit_fun(ff, ud1, ud2);
-		std::cout << Xopt.ud << std::endl << std::endl;
+		// std::cout << Xopt.ud << std::endl << std::endl;
 		
 		return Xopt;
 	}

@@ -8,7 +8,10 @@ Akademia Górniczo-Hutnicza
 Data ostatniej modyfikacji: 19.09.2023
 *********************************************/
 
-#include"opt_alg.h"
+#include <fstream>
+#include <time.h>
+#include <cstdlib>
+#include "opt_alg.h"
 
 void lab0();
 void lab1();
@@ -69,7 +72,65 @@ void lab0()
 
 void lab1()
 {
-	// Shared vars
+	// Shared arguments
+	double epsilon = 1e-05;
+	int n_max = 1000;
+
+	// Expansion-specific arguments
+	int x_min = -100, x_max = 100;  // Boundries for random number generation
+	double d = 2, alpha = 2;
+
+	// Lagrangea-specific arguments
+	double gamma = 1e-200;
+
+	// File output
+	const char delimiter = ';';
+	const string OUTPUT_PATH = "Output/";
+	ofstream exp_file(OUTPUT_PATH + "out_exp.txt");
+	ofstream fib_file(OUTPUT_PATH + "out_fib.txt");
+	ofstream lag_file(OUTPUT_PATH + "out_lag.txt");
+
+	// Init random number generator
+	srand(time(NULL));
+
+	// Table 1 and Table 2
+	for (int i = 0; i < 100; i++)
+	{
+		// Narrow the range using expansion with random x0
+		double x0 = x_min + (double)rand() / RAND_MAX * (x_max - x_min);
+		double* range = expansion(ff1T, x0, d, alpha, n_max);
+
+		if (exp_file.is_open())
+			exp_file << x0 << delimiter << range[0] << delimiter << range[1] << ";" << solution::f_calls << delimiter << "\n";
+		
+		// Use Fibonnaci's method
+		solution::clear_calls();
+		solution fib_result = fib(ff1T, range[0], range[1], epsilon);
+
+		if (fib_file.is_open())
+			fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+
+		// Use Lagrange's method
+		solution::clear_calls();
+		solution lag_result = lag(ff1T, range[0], range[1], epsilon, gamma, n_max);
+
+		if (lag_file.is_open())
+			lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+
+
+		// Deallocate memory
+		delete[] range;
+	}
+
+	// Close the files
+	exp_file.close();
+	fib_file.close();
+	lag_file.close();
+}
+
+void lab1_1()
+{
+	// Shared arguments
 	double epsilon = 0.001;
 	int Nmax = 1000000;
 
@@ -91,19 +152,19 @@ void lab1()
 
 	std::cout << "-------- Metoda oparta na interpolacji Lagrange'a --------" << "\n";
 	std::cout << lag(ff1T, p[0], p[1], epsilon, gamma, Nmax) << "\n";
-/*
-	std::cout << "-------- P A I N --------" << "\n";
+	/*
+		std::cout << "-------- P A I N --------" << "\n";
 
-	solution fib_2 = fib(simulate_flow_temp, 1e-4, 1e-2, 1e-5);
-	
-	// va, vb, tb
-	matrix Y0_1 = matrix(3, new double[3] {5, 1, 20});
-	matrix* Yz1 = solve_ode(flow_and_temp, 0, 1, 2000, Y0_1, NULL, 0.005); // 0.005 = DA= 50CM
-	std::cout << Yz1[1] << "\n";
+		solution fib_2 = fib(simulate_flow_temp, 1e-4, 1e-2, 1e-5);
 
-	std::cout << "-------- P A I N 2 --------" << "\n";
-	std::cout << "it fucking sucks: " << Yz1[1] << "\n";
-*/
+		// va, vb, tb
+		matrix Y0_1 = matrix(3, new double[3] {5, 1, 20});
+		matrix* Yz1 = solve_ode(flow_and_temp, 0, 1, 2000, Y0_1, NULL, 0.005); // 0.005 = DA= 50CM
+		std::cout << Yz1[1] << "\n";
+
+		std::cout << "-------- P A I N 2 --------" << "\n";
+		std::cout << "it fucking sucks: " << Yz1[1] << "\n";
+	*/
 	// solution opt = fib(simulate_flow_temp, -100, 100, epsilon, NULL, NULL);
 	// std:cout << opt << "\n";
 
