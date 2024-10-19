@@ -1,5 +1,4 @@
-﻿#include"opt_alg.h"
-#include <vector>
+#include"opt_alg.h"
 
 solution MC(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
@@ -35,10 +34,8 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 {
 	try
 	{
-		double* p = new double[2] { 0, 0 };
-
+		double* p = new double[2]{ 0,0 };
 		//Tu wpisz kod funkcji
-		// --------------------
 		solution X0(x0), X1(x0 + d);
 		X0.fit_fun(ff, ud1, ud2);
 		X1.fit_fun(ff, ud1, ud2);
@@ -49,49 +46,47 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 			p[1] = m2d(X1.x);
 			return p;
 		}
-
+		
 		if (X1.y > X0.y)
 		{
 			d = -d;
+			
 			X1.x = X0.x + d;
 			X1.fit_fun(ff, ud1, ud2);
-			
 			if (X1.y >= X0.y)
 			{
 				p[0] = m2d(X1.x);
-				p[1] = m2d(X0.x) - d;
+				p[1] = m2d(X0.x)-d;
+				
 				return p;
 			}
 		}
-
-		int i = 1;
-		solution X2(X1);	// "x + i"
-		while (true)
+		double prev;
+		do
 		{
-			if (solution::f_calls > Nmax)
-			{
-				// "Error"
-				throw("Nie znaleziono przedzialu\n");
-			}
 			
-			X1 = X2;
-			X2.x = X0.x + pow(alpha, i++) * d;
-			X2.fit_fun(ff, ud1, ud2);
-			// X1.fit_fun(ff, ud1, ud2);
-
-			if (!(X1.y <= X2.y))
-				break;
-		}
-
+			if (solution::f_calls > Nmax) {
+				solution::clear_calls();
+				throw string(string("Nie znaleziono przedzialu po " +  Nmax) + " probach");
+			}
+			prev = m2d(X0.x);
+			X0 = X1;
+			X1.x = x0 + alpha * d;
+			X1.fit_fun(ff, ud1, ud2);
+			alpha *= alpha;
+			
+		} while (X1.y <= X0.y);
 		if (d > 0)
 		{
-			p[0] = m2d(X0.x);
-			p[1] = m2d(X2.x);
-			return p;
+			p[0] = prev;
+			p[1] = m2d(X1.x);
 		}
-
-		p[0] = m2d(X2.x);
-		p[1] = m2d(X0.x);
+		else
+		{
+			p[1] = m2d(X1.x);
+			p[0] = prev;
+		}
+		solution::clear_calls();
 		return p;
 	}
 	catch (string ex_info)
@@ -105,43 +100,73 @@ solution fib(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 	try
 	{
 		solution Xopt;
-
-		std::vector<int> fibs;
-		fibs.push_back(1);
-		fibs.push_back(1);
-
-		int new_fib = fibs.back();
-		while (new_fib <= (b - a) / epsilon)
+		//Tu wpisz kod funkcji
+		 
+		//znajdz najmniejsza k, tak aby k-ty element ciagu fibonaciego byl wiekszy od dlugosci przedzialu przez epsylon
+		double deps = (b - a) / epsilon;
+		std::cout <<"DEPS:" << deps << std::endl;
+		int k = 2;
+		int Mk = 10;
+		const int ak = 5;
+		int Pk = 10;
+		long* tQ = new long[Mk];
+		tQ[0] = 0;
+		tQ[1] = 1;
+		tQ[2] = 1;
+		tQ[3] = 2;
+		tQ[4] = 3;
+		tQ[5] = 5;
+		tQ[6] = 8;
+		tQ[7] = 13;
+		tQ[8] = 21;
+		tQ[9] = 34;
+		while (tQ[k] <= deps)
 		{
-			new_fib = fibs[fibs.size() - 1] + fibs[fibs.size() - 2];
-			fibs.push_back(new_fib);
+			k++;
+			
+			if (k != Mk)
+			{
+				Mk += ak;
+				long* tmpQ = new long[Mk];
+				std::copy(tQ, tQ + Mk - ak, tmpQ);
+				delete[] tQ;
+				tQ = tmpQ;
+			}
+
+			if (k == Pk) {
+				
+				tQ[k] = tQ[k - 1] + tQ[k - 2];
+				Pk++;
+			}
+
 		}
-
-		int k = fibs.size() - 1;
-
+		
 		double a0 = a, b0 = b;
-		solution c0(b0 - (double)fibs[k - 1] / fibs[k] * (b0 - a0));
-		solution d0((double)fibs[k - 1] / fibs[k] * (b0 - a0));
-
+		solution c0(b0 - static_cast<double>(tQ[k - 1]) / tQ[k] * (b0 - a0));
+		solution d0(static_cast<double>(tQ[k - 1]) / tQ[k] * (b0 - a0));
 		for (int i = 0; i <= k - 3; i++)
 		{
+
 			if (c0.fit_fun(ff, ud1, ud2) < d0.fit_fun(ff, ud1, ud2))
 				b0 = m2d(d0.x);
 			else
 				a0 = m2d(c0.x);
 
-			c0.x = b0 - (double)fibs[k - 1] / fibs[k] * (b0 - a0);
-			d0.x = a0 + (double)fibs[k - i - 2] / fibs[k - i - 1] * (b0 - a0);
+			c0.x = b0 - static_cast<double>(tQ[k - i - 2]) / tQ[k - i - 1] * (b0 - a0);
+			d0.x = a0 + b0 - c0.x;
 		}
 
 		Xopt = c0;
 		Xopt.flag = 0;
 		return Xopt;
+		delete[] tQ;
+		return Xopt;
 	}
-	catch (const std::string& ex_info)
+	catch (string ex_info)
 	{
 		throw ("solution fib(...):\n" + ex_info);
 	}
+
 }
 
 solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double epsilon, double gamma, int Nmax, matrix ud1, matrix ud2)
@@ -149,62 +174,68 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 	try
 	{
 		solution Xopt;
+		//Tu wpisz kod funkcji
 		int i = 0;
-		double a0 = a, b0 = b, c0 = (a + b) / 2;
-		double dm1 = 0;
-		double d0 = 0;
-
-		while (true)
+		solution ai(a), bi(b), ci((a + b) * .5);
+		ai.fit_fun(ff, ud1, ud2);
+		bi.fit_fun(ff, ud1, ud2);
+		ci.fit_fun(ff, ud1, ud2);
+		double di_1 = 0;
+		solution di(0);
+		do
 		{
-			double fa = m2d(ff(a0, ud1, ud2));
-			double fb = m2d(ff(b0, ud1, ud2));
-			double fc = m2d(ff(c0, ud1, ud2));
-
-			double l = fa * (b0 * b0 - c0 * c0) + fb * (c0 * c0 - a0 * a0) + fc * (a0 * a0 - b0 * b0);
-			double m = fa * (b0 - c0) + fb * (c0 - a0) + fc * (a0 - b0);
+			matrix l = ai.y * (pow(bi.x, 2) - pow(ci.x,2)) + bi.y * (pow(ci.x, 2) - pow(ai.x, 2)) 
+				+ ci.y * (pow(ai.x, 2) - pow(bi.x, 2));
+			matrix m = ai.y * (bi.x - ci.x) + bi.y * (bi.x - ci.x) + ci.y * (ai.x - bi.x);
 
 			if (m <= 0)
-				throw ("Brak rozwiązania\n");
+				throw string("Brak rozwi�zania\n");
 
-			dm1 = d0;
-			d0 = 0.5 * l / m;
-			if (a0 < d0 && d0 < c0)
+			di_1 = m2d(di.x);
+			di = solution( 0.5 * m2d(l) / m2d(m));
+			di.fit_fun(ff, ud1, ud1);
+
+			if (abs(m2d(di.x) - di_1) < gamma)
+				break;
+			if (ai.x < di.x && di.x < ci.x)
 			{
-				if (ff(d0, ud1, ud2) < ff(c0, ud1, ud2))
+				if (di.y < ci.y)
 				{
-					c0 = d0;
-					b0 = c0;
+					a = m2d(ai.x);
+					ci = di;
+					bi = ci;
 				}
 				else
-					a0 = d0;
-
+				{
+					ai = di;
+					b = m2d(bi.x);
+				}
 			}
-			else if (c0 < d0 && d0 < b0)
+			else if (ci.x < di.x && di.x < bi.x)
 			{
-				if (ff(d0, ud1, ud2) < ff(c0, ud1, ud2))
+				if (di.y < ci.y)
 				{
-					a0 = c0;
-					c0 = d0;
+					a = m2d(ci.x);
+					ai = ci;
+					ci = di;
 				}
 				else
-					b0 = d0;
+				{
+					a = m2d(ai.x);
+					bi = di;
+				}
 			}
 			else
-			{
-				//throw ("Brak rozwiązania\n");
+				throw string("d(i) poza zakresem\n");
+			i++;
+			if (solution::f_calls > Nmax) {
+				throw string(string("Nie znaleziono przedzialu po " + Nmax) + " probach");
 			}
 
-
-			i++;
-			if (i > Nmax)
-				throw ("Nmax");
-
-			if (b0 - a0 < epsilon || fabs(d0 - dm1) < gamma)
-				break;
-
-		}
-
-		Xopt.x = d0;
+		} while (!(b-a < epsilon));
+		Xopt = di;
+		Xopt.flag = 0;
+		
 		return Xopt;
 	}
 	catch (string ex_info)
