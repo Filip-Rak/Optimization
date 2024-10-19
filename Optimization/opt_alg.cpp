@@ -64,9 +64,8 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 		double prev;
 		do
 		{
-			
 			if (solution::f_calls > Nmax) {
-				solution::clear_calls();
+				
 				throw string(string("Nie znaleziono przedzialu po " +  Nmax) + " probach");
 			}
 			prev = m2d(X0.x);
@@ -76,15 +75,15 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 			alpha *= alpha;
 			
 		} while (X1.y <= X0.y);
-		if (d > 0)
-		{
+		
+		if (prev < X1.x) {
 			p[0] = prev;
 			p[1] = m2d(X1.x);
 		}
 		else
 		{
-			p[1] = m2d(X1.x);
-			p[0] = prev;
+			p[0] = m2d(X1.x);
+			p[1] = prev;
 		}
 		solution::clear_calls();
 		return p;
@@ -104,7 +103,7 @@ solution fib(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 		 
 		//znajdz najmniejsza k, tak aby k-ty element ciagu fibonaciego byl wiekszy od dlugosci przedzialu przez epsylon
 		double deps = (b - a) / epsilon;
-		std::cout <<"DEPS:" << deps << std::endl;
+		//std::cout <<"DEPS:" << deps << std::endl;
 		int k = 2;
 		int Mk = 10;
 		const int ak = 5;
@@ -141,29 +140,36 @@ solution fib(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 
 		}
 		
-		double a0 = a, b0 = b;
-		solution c0(b0 - static_cast<double>(tQ[k - 1]) / tQ[k] * (b0 - a0));
-		solution d0(static_cast<double>(tQ[k - 1]) / tQ[k] * (b0 - a0));
-		for (int i = 0; i <= k - 3; i++)
+		solution a0(a), b0(b);
+		solution c0(b0.x - (static_cast<double>(tQ[k - 1]) / tQ[k]) * (b0.x - a0.x));
+		solution d0(a0.x + b0.x - c0.x);
+		Xopt.ud = b - a;
+		for (int i = 1; i <= k - 3; i++)
 		{
-
+//std::cout << a0.x << b0.x;
+//std::cout << c0.x << d0.x << std::endl;
 			if (c0.fit_fun(ff, ud1, ud2) < d0.fit_fun(ff, ud1, ud2))
-				b0 = m2d(d0.x);
+				b0 = d0;
 			else
-				a0 = m2d(c0.x);
-
-			c0.x = b0 - static_cast<double>(tQ[k - i - 2]) / tQ[k - i - 1] * (b0 - a0);
-			d0.x = a0 + b0 - c0.x;
+				a0 = c0;
+			
+			c0.x = b0.x - (static_cast<double>(tQ[k - i - 2]) / tQ[k - i - 1]) * (b0.x - a0.x);
+			d0.x = a0.x + b0.x - c0.x;
+//std::cout << a0.x << b0.x;
+//std::cout << c0.x << d0.x << std::endl;
+			Xopt.ud.add_row(m2d(b0.x - a0.x));
 		}
 
 		Xopt = c0;
 		Xopt.flag = 0;
-		return Xopt;
+		//std::cout << Xopt.ud << std::endl << std::endl;
 		delete[] tQ;
+		
 		return Xopt;
 	}
 	catch (string ex_info)
 	{
+		solution::clear_calls();
 		throw ("solution fib(...):\n" + ex_info);
 	}
 
@@ -175,71 +181,98 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 	{
 		solution Xopt;
 		//Tu wpisz kod funkcji
-		int i = 0;
+		
 		solution ai(a), bi(b), ci((a + b) * .5);
 		ai.fit_fun(ff, ud1, ud2);
 		bi.fit_fun(ff, ud1, ud2);
 		ci.fit_fun(ff, ud1, ud2);
-		double di_1 = 0;
+		long double di_1 = 0;
+		int i = 0;
 		solution di(0);
+		Xopt.flag = 0;
 		do
 		{
+			if (!i)
+			{
+				i++;
+				Xopt.ud = b - a;
+			}
+			else
+				Xopt.ud.add_row(m2d(bi.x - ai.x));
+//std::cout << ai.x << bi.x << ci.x << std::endl;
+//std::cout << ai.y << bi.y << ci.y << std::endl;
+
 			matrix l = ai.y * (pow(bi.x, 2) - pow(ci.x,2)) + bi.y * (pow(ci.x, 2) - pow(ai.x, 2)) 
 				+ ci.y * (pow(ai.x, 2) - pow(bi.x, 2));
-			matrix m = ai.y * (bi.x - ci.x) + bi.y * (bi.x - ci.x) + ci.y * (ai.x - bi.x);
-
+			matrix m = ai.y * (bi.x - ci.x) + bi.y * (ci.x - ai.x) + ci.y * (ai.x - bi.x);
+//std::cout << m << l << std::endl;
 			if (m <= 0)
-				throw string("Brak rozwi¹zania\n");
+				throw string("Brak rozwiazania, m <= 0\n");
 
 			di_1 = m2d(di.x);
 			di = solution( 0.5 * m2d(l) / m2d(m));
-			di.fit_fun(ff, ud1, ud1);
-
+//std::cout << di.x << std::endl << std::endl;
 			if (abs(m2d(di.x) - di_1) < gamma)
 				break;
+			di.fit_fun(ff, ud1, ud1);
+
+//std::cout << ai.x << " " << di.x << " " << bi.x << std::endl;
 			if (ai.x < di.x && di.x < ci.x)
 			{
-				if (di.y < ci.y)
+				if (di.y <= ci.y)
 				{
-					a = m2d(ai.x);
-					ci = di;
-					bi = ci;
+					bi.x = ci.x;
+					bi.y = ci.y;
+					ci.x = di.x; 
+					ci.y = di.y;
+
 				}
 				else
 				{
-					ai = di;
-					b = m2d(bi.x);
+					ai.x = di.x;
+					ai.y = di.y;
 				}
+
 			}
 			else if (ci.x < di.x && di.x < bi.x)
 			{
-				if (di.y < ci.y)
+				if (di.y <= ci.y)
 				{
-					a = m2d(ci.x);
-					ai = ci;
-					ci = di;
+					ai.x = ci.x;
+					ai.y = ci.y;
+					ci.x = di.x;
+					ci.y = di.y;
 				}
 				else
 				{
-					a = m2d(ai.x);
-					bi = di;
+					bi.x = di.x;
+					bi.y = di.y;
 				}
+
 			}
-			else
-				throw string("d(i) poza zakresem\n");
-			i++;
+			else {
+				Xopt.flag = -1;
+				//throw string("di poza zakresem\n");
+			}
 			if (solution::f_calls > Nmax) {
+				
 				throw string(string("Nie znaleziono przedzialu po " + Nmax) + " probach");
 			}
 
-		} while (!(b-a < epsilon));
-		Xopt = di;
-		Xopt.flag = 0;
+		} while (m2d(bi.x) - m2d(ai.x) >= epsilon);
+		
+		Xopt.x = di.x;
+		Xopt.y = di.y;
+		
+		Xopt.fit_fun(ff, ud1, ud2);
+		std::cout << Xopt.ud << std::endl << std::endl;
 		
 		return Xopt;
 	}
+	
 	catch (string ex_info)
 	{
+		solution::clear_calls();
 		throw ("solution lag(...):\n" + ex_info);
 	}
 }

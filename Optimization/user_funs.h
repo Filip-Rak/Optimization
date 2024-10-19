@@ -1,6 +1,8 @@
 #pragma once
-
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include"ode_solver.h"
+
 
 matrix ff0T(matrix, matrix = NAN, matrix = NAN);
 matrix ff0R(matrix, matrix = NAN, matrix = NAN);

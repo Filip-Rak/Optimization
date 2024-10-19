@@ -71,11 +71,13 @@ void lab1()
 {
 	// Shared vars
 	double epsilon = 0.001;
-	int Nmax = 1000;
+	int Nmax = 1000000;
 
 	// Expansion Method
-	double x0 = -1, d = 2, alpha = 2;
+	double x0 = 30, d = 2, alpha = 2;
 	double* p = expansion(ff1T, x0, d, alpha, Nmax);
+
+	std::cout << " ( " << p[0] << " ; " << p[1] << " );\n";
 
 	// Fibonacci's Method
 	solution::clear_calls();
@@ -89,7 +91,7 @@ void lab1()
 
 	std::cout << "-------- Metoda oparta na interpolacji Lagrange'a --------" << "\n";
 	std::cout << lag(ff1T, p[0], p[1], epsilon, gamma, Nmax) << "\n";
-
+/*
 	std::cout << "-------- P A I N --------" << "\n";
 
 	solution fib_2 = fib(simulate_flow_temp, 1e-4, 1e-2, 1e-5);
@@ -101,7 +103,7 @@ void lab1()
 
 	std::cout << "-------- P A I N 2 --------" << "\n";
 	std::cout << "it fucking sucks: " << Yz1[1] << "\n";
-
+*/
 	// solution opt = fib(simulate_flow_temp, -100, 100, epsilon, NULL, NULL);
 	// std:cout << opt << "\n";
 

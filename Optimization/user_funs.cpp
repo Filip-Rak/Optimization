@@ -38,7 +38,8 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2)
 // ------------------
 matrix ff1T(matrix x, matrix ud1, matrix ud2)
 {
-	return pow(x, 2);
+	double t = -pow(0.1 * m2d(x) - 2 * M_PI,2);
+	return -cos(0.1 * m2d(x)) * pow(M_E, t) + 0.00002 * pow(m2d(x),2);
 }
 
 matrix flow_and_temp(double t, matrix Y, matrix ud1, matrix ud2)
