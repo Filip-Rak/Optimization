@@ -202,15 +202,12 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 //std::cout << ai.x << bi.x << ci.x << std::endl;
 //std::cout << ai.y << bi.y << ci.y << std::endl;
 
-			matrix l = ai.y * (pow(bi.x, 2) - pow(ci.x,2)) + bi.y * (pow(ci.x, 2) - pow(ai.x, 2)) 
+			matrix l = ai.y * (pow(bi.x, 2) - pow(ci.x, 2)) + bi.y * (pow(ci.x, 2) - pow(ai.x, 2)) 
 				+ ci.y * (pow(ai.x, 2) - pow(bi.x, 2));
 			matrix m = ai.y * (bi.x - ci.x) + bi.y * (ci.x - ai.x) + ci.y * (ai.x - bi.x);
 //std::cout << m << l << std::endl;
 			if (m <= 0)
-			{
-				di.flag = -2;
-				return di;
-			}
+				throw string("Brak rozwiazania, m <= 0\n");
 
 			di_1 = m2d(di.x);
 			di = solution( 0.5 * m2d(l) / m2d(m));
@@ -222,7 +219,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 //std::cout << ai.x << " " << di.x << " " << bi.x << std::endl;
 			if (ai.x < di.x && di.x < ci.x)
 			{
-				if (di.y <= ci.y)
+				if (di.y < ci.y)
 				{
 					bi.x = ci.x;
 					bi.y = ci.y;
@@ -239,7 +236,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 			}
 			else if (ci.x < di.x && di.x < bi.x)
 			{
-				if (di.y <= ci.y)
+				if (di.y < ci.y)
 				{
 					ai.x = ci.x;
 					ai.y = ci.y;
@@ -255,6 +252,9 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 			}
 			else {
 				Xopt.flag = -1;
+				Xopt.x = di_1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				return Xopt;
 				//throw string("di poza zakresem\n");
 			}
 			if (solution::f_calls > Nmax) {
@@ -268,7 +268,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 		Xopt.y = di.y;
 		
 		Xopt.fit_fun(ff, ud1, ud2);
-		// std::cout << Xopt.ud << std::endl << std::endl;
+		std::cout << Xopt.ud << std::endl << std::endl;
 		
 		return Xopt;
 	}
