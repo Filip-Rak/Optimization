@@ -78,13 +78,13 @@ void lab1()
 
 	// Expansion-specific arguments
 	int x_min = -100, x_max = 100;  // Boundries for random number generation
-	double d = 2, alpha = 2;
+	double d = 2, alpha = 17;
 
 	// Lagrangea-specific arguments
 	double gamma = 1e-200;
 
 	// File output
-	const char delimiter = ';';
+	const char delimiter = '\t';
 	const string OUTPUT_PATH = "Output/";
 	ofstream exp_file(OUTPUT_PATH + "out_1_1_exp.txt");
 	ofstream fib_file(OUTPUT_PATH + "out_1_2_fib.txt");
@@ -112,7 +112,7 @@ void lab1()
 
 		if (fib_file.is_open())
 			fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) 
-			<< delimiter << solution::f_calls << delimiter << fib_result.flag  << delimiter << "\n";
+			<< delimiter << solution::f_calls << delimiter << fib_result.flag << delimiter << "\n";
 
 		// Use Lagrange's method
 		solution::clear_calls();
@@ -164,25 +164,51 @@ void lab1()
 	// Open new files
 	fib_file.open(OUTPUT_PATH + "out_3_1_fib.txt");
 	lag_file.open(OUTPUT_PATH + "out_3_2_lag.txt");
-
-	double x0 = 1 + 100 / 2;
-	double x0 = 1;
-
-	// Call expansion
-	double* range = expansion(simulate_flow_temp, x0, d, alpha, n_max);
-	std::cout << range[0] << " " << range[1];
+	
+	// Table specific function arguments
+	double range[] = { 1e-4, 1e-2 };
 
 	// Call Fibonacci
 	solution::clear_calls();
 	fib_result = fib(simulate_flow_temp, range[0], range[1], epsilon);
-	fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+	fib_file << m2d(fib_result.x) << delimiter << m2d(fib_result.y) << delimiter
+		<< solution::f_calls << delimiter << fib_result.flag << delimiter << "\n";
 
 	// Call Lagrange
 	solution::clear_calls();
 	lag_result = lag(simulate_flow_temp, range[0], range[1], epsilon, gamma, n_max);
-	lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) << delimiter << solution::f_calls << delimiter << "\n";
+	lag_file << m2d(lag_result.x) << delimiter << m2d(lag_result.y) << delimiter 
+		<< solution::f_calls << delimiter << lag_result.flag << delimiter << "\n";
 
 	// Close the files
+	fib_file.close();
+	lag_file.close();
+
+	// ---------- Simulation ----------
+	// Initial conditions
+	double volume_a = 5, volume_b = 1, temp_b = 20;
+	double conditions[3] = { volume_a, volume_b, temp_b };
+	matrix Y0 = matrix(3, conditions);
+
+	// Time
+	double start_time = 0.0;
+	double end_time = 2000.0;
+	double time_step = 1.0;
+
+	// Solve differential equation with result from Fibonacci
+	matrix* ode_fib_result = solve_ode(flow_and_temp, start_time, time_step, end_time, Y0, NULL, fib_result.x(0));
+	
+	// Solve differential equation with result from Lagrange
+	matrix* ode_lag_result = solve_ode(flow_and_temp, start_time, time_step, end_time, Y0, NULL, lag_result.x(0));
+
+	// Open files and save results
+	fib_file.open(OUTPUT_PATH + "out_4_1_fib.txt");
+	lag_file.open(OUTPUT_PATH + "out_4_2_lag.txt");
+
+	fib_file << ode_fib_result[1];
+	lag_file << ode_lag_result[1];
+
+	// Close the file
 	fib_file.close();
 	lag_file.close();
 }
