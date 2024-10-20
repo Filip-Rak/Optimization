@@ -85,7 +85,7 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 			p[0] = m2d(X1.x);
 			p[1] = prev;
 		}
-		solution::clear_calls();
+
 		return p;
 	}
 	catch (string ex_info)
@@ -206,9 +206,9 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 				+ ci.y * (pow(ai.x, 2) - pow(bi.x, 2));
 			matrix m = ai.y * (bi.x - ci.x) + bi.y * (ci.x - ai.x) + ci.y * (ai.x - bi.x);
 //std::cout << m << l << std::endl;
-			if (m <= 0) {
+			if (m <= 0)
 				throw string("Brak rozwiazania, m <= 0\n");
-			}
+
 			di_1 = m2d(di.x);
 			di = solution( 0.5 * m2d(l) / m2d(m));
 //std::cout << di.x << std::endl << std::endl;
@@ -267,6 +267,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 		Xopt.x = di.x;
 		Xopt.y = di.y;
 		
+		Xopt.fit_fun(ff, ud1, ud2);
 		std::cout << Xopt.ud << std::endl << std::endl;
 		
 		return Xopt;
