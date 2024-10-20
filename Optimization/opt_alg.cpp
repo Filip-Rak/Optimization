@@ -207,7 +207,10 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 			matrix m = ai.y * (bi.x - ci.x) + bi.y * (ci.x - ai.x) + ci.y * (ai.x - bi.x);
 //std::cout << m << l << std::endl;
 			if (m <= 0)
-				throw string("Brak rozwiazania, m <= 0\n");
+			{
+				Xopt.flag = -1;
+				return Xopt;
+			}
 
 			di_1 = m2d(di.x);
 			di = solution( 0.5 * m2d(l) / m2d(m));
@@ -268,7 +271,7 @@ solution lag(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 		Xopt.y = di.y;
 		
 		Xopt.fit_fun(ff, ud1, ud2);
-		std::cout << Xopt.ud << std::endl << std::endl;
+		// std::cout << Xopt.ud << std::endl << std::endl;
 		
 		return Xopt;
 	}

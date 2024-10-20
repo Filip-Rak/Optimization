@@ -208,7 +208,7 @@ void lab1()
 	fib_file << ode_fib_result[1];
 	lag_file << ode_lag_result[1];
 
-	// Close the file
+	// Close the files
 	fib_file.close();
 	lag_file.close();
 }
