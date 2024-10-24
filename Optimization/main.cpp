@@ -79,7 +79,7 @@ void lab1()
 
 	// Expansion-specific arguments
 	int x_min = -100, x_max = 100;  // Boundries for random number generation
-	double d = 2, alpha = 17;
+	double d = 2, alpha = 13;
 
 	// Lagrangea-specific arguments
 	double gamma = 1e-200;
