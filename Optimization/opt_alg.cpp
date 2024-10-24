@@ -308,7 +308,7 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 					xs = HJ_trial(ff, xs, s, ud1, ud2);
 					if (solution::f_calls > Nmax)
 					{
-						throw string(string("Nie znaleziono przedzialu po " + Nmax) + " probach (f(x)<f(xB))");
+						throw string("Nie znaleziono przedzialu po Nmax probach (f(x)<f(xB))");
 					}
 				} while (m2d(xs.y) < m2d(xB.y));
 				xs = xB;
