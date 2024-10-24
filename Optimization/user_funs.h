@@ -13,3 +13,5 @@ matrix df0(double, matrix, matrix = NAN, matrix = NAN);
 matrix ff1T(matrix, matrix = NAN, matrix = NAN);
 matrix flow_and_temp(double t, matrix Y, matrix ud1, matrix ud2);
 matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2);
+
+matrix ff2T(matrix, matrix = NAN, matrix = NAN);

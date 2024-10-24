@@ -150,6 +150,7 @@ void matrix::add_col(double L)
 			A(i, j) = M[i][j];
 		A(i, m) = L;
 	}
+	
 	*this = A;
 }
 
@@ -210,6 +211,8 @@ matrix operator+(const matrix& A, const matrix& B)
 		for (int i = 0; i < nB[0]; ++i)
 			for (int j = 0; j < nB[1]; ++j)
 				C(i, j) += A();
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
 	else if (nB[0] == 1 && nB[1] == 1)
@@ -218,6 +221,8 @@ matrix operator+(const matrix& A, const matrix& B)
 		for (int i = 0; i < nA[0]; ++i)
 			for (int j = 0; j < nA[1]; ++j)
 				C(i, j) += B();
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
 	else if (nA[0] == nB[0] && nA[1] == nB[1])
@@ -226,10 +231,15 @@ matrix operator+(const matrix& A, const matrix& B)
 		for (int i = 0; i < nA[0]; ++i)
 			for (int j = 0; j < nA[1]; ++j)
 				C(i, j) += B(i, j);
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
-	else
+	else {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("matrix operator+(const matrix&, const matrix&):\nwymiary macierzy nie sa zgodne");
+	}
 }
 
 matrix operator-(const matrix& A, const matrix& B)
@@ -254,6 +264,8 @@ matrix operator*(const matrix& A, const matrix& B)
 		for (int i = 0; i < nB[0]; ++i)
 			for (int j = 0; j < nB[1]; ++j)
 				C(i, j) *= A();
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
 	else if (nB[0] == 1 && nB[1] == 1)
@@ -262,6 +274,8 @@ matrix operator*(const matrix& A, const matrix& B)
 		for (int i = 0; i < nA[0]; ++i)
 			for (int j = 0; j < nA[1]; ++j)
 				C(i, j) *= B();
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
 	else if (nA[1] == nB[0])
@@ -271,10 +285,15 @@ matrix operator*(const matrix& A, const matrix& B)
 			for (int j = 0; j < nB[1]; ++j)
 				for (int k = 0; k < nA[1]; ++k)
 					C(i, j) += A(i, k) * B(k, j);
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		return C;
 	}
-	else
+	else {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("matrix operator*(const matrix&, const matrix&):\nwymiary macierzy nie sa zgodne");
+	}
 }
 
 matrix operator/(const matrix& A, const matrix& B)
@@ -296,6 +315,7 @@ matrix operator-(const matrix& A)
 	for (int i = 0; i < n[0]; ++i)
 		for (int j = 0; j < n[1]; ++j)
 			B(i, j) = -A(i, j);
+	freeIntTab2D(n);
 	return B;
 }
 
@@ -303,8 +323,13 @@ bool operator<(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator<(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() < B();
 }
 
@@ -312,8 +337,13 @@ bool operator>(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator>(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() > B();
 }
 
@@ -321,8 +351,13 @@ bool operator<=(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator<=(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() <= B();
 }
 
@@ -330,8 +365,13 @@ bool operator>=(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1){
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator>=(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() >= B();
 }
 
@@ -339,8 +379,13 @@ bool operator==(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator==(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() == B();
 }
 
@@ -348,8 +393,13 @@ bool operator!=(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1 || nB[0] != 1 || nB[1] != 1) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("bool operator!=(const matrix&, const matrix&):\noperator relacji jest zdefiniwany tylko dla macierzy 1x1");
+	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return A() != B();
 }
 
@@ -408,16 +458,21 @@ matrix randn_mat(int nv, int mv)
 double m2d(const matrix& A)
 {
 	int* nA = get_size(A);
-	if (nA[0] != 1 || nA[1] != 1)
+	if (nA[0] != 1 || nA[1] != 1) {
+		freeIntTab2D(nA);
 		throw string("double m2d(const matrix&):\nzamiana macierzy na liczbe mozliwa jest tylko dla skalarow");
+	}
+	freeIntTab2D(nA);
 	return A(0, 0);
 }
 
 double det(const matrix& A)
 {
 	int* nA = get_size(A);
-	if (nA[0] != nA[1])
+	if (nA[0] != nA[1]) {
+		freeIntTab2D(nA);
 		throw string("double det(const matrix&):\nmacierz musi byc kwadratowa");
+	}
 	double D = 0;
 	if (nA[0] == 1)
 		D = A();
@@ -432,17 +487,19 @@ double det(const matrix& A)
 			D = D + A(0, k) * pow(-1.0, k) * det(T);
 		}
 	}
+	freeIntTab2D(nA);
 	return D;
 }
 
 matrix inv(const matrix& A)
 {
+	int* nA = get_size(A);
 	try
 	{
 		double D = det(A);
 		if (D == 0)
 			throw string("matrix inv(const matrix&):\nwyznacznik macierzy wynosi 0");
-		int* nA = get_size(A);
+		
 		matrix I(nA[0], nA[0]);
 		if (nA[0] == 1)
 			I() = 1 / A();
@@ -459,10 +516,12 @@ matrix inv(const matrix& A)
 				}
 			I = 1 / D * trans(I);
 		}
+		freeIntTab2D(nA);
 		return I;
 	}
 	catch (string ex_info)
 	{
+		freeIntTab2D(nA);
 		throw ("matrix inv(const matrix&):\n" + ex_info);
 	}
 }
@@ -474,6 +533,7 @@ matrix trans(const matrix& A)
 	for (int i = 0; i < nA[1]; ++i)
 		for (int j = 0; j < nA[0]; ++j)
 			B(i, j) = A(j, i);
+	freeIntTab2D(nA);
 	return B;
 }
 
@@ -482,22 +542,28 @@ matrix pow(const matrix& A, int n)
 	if (n < 0)
 		throw string("matrix pow(const matrix&,int):\nwykladnik potegi nie moze byc ujemny");
 	int* nA = get_size(A);
-	if (nA[0] != nA[1])
+	if (nA[0] != nA[1]) {
+		freeIntTab2D(nA);
 		throw string("matrix pow(const matrix&,int):\npotegowanie jest mozliwe tylko dla macierzy kwadratowych");
+	}
 	matrix B = ident_mat(nA[0]);
 	for (int i = 1; i <= n; ++i)
 		B = B * A;
+	freeIntTab2D(nA);
 	return B;
 }
 
 double norm(const matrix& A)
 {
 	int* nA = get_size(A);
-	if (nA[1] != 1)
+	if (nA[1] != 1) {
+		freeIntTab2D(nA);
 		throw string("double norm(const matrix&):\nnorma jest zdefiniowana tylko dla wektorow pionowych");
+	}
 	double N = 0;
 	for (int i = 0; i < nA[0]; ++i)
 		N += pow(A(i), 2);
+	freeIntTab2D(nA);
 	return sqrt(N);
 }
 
@@ -505,8 +571,11 @@ matrix hcat(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[0] != nB[0])
+	if (nA[0] != nB[0]) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("matrix hcat(const matrix&,const matrix&):\nliczba wierszy macierzy musi byc taka sama");
+	}
 	matrix C(nA[0], nA[1] + nB[1]);
 	for (int i = 0; i < nA[0]; ++i)
 	{
@@ -515,6 +584,8 @@ matrix hcat(const matrix& A, const matrix& B)
 		for (int j = 0; j < nB[1]; ++j)
 			C(i, j + nA[1]) = B(i, j);
 	}
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return C;
 }
 
@@ -522,8 +593,11 @@ matrix vcat(const matrix& A, const matrix& B)
 {
 	int* nA = get_size(A);
 	int* nB = get_size(B);
-	if (nA[1] != nB[1])
+	if (nA[1] != nB[1]) {
+		freeIntTab2D(nA);
+		freeIntTab2D(nB);
 		throw string("matrix vcat(const matrix&,const matrix&):\nliczba kolumn macierzy musi byc taka sama");
+	}
 	matrix C(nA[0] + nB[0], nA[1]);
 	for (int i = 0; i < nA[0]; ++i)
 		for (int j = 0; j < nA[1]; ++j)
@@ -531,28 +605,36 @@ matrix vcat(const matrix& A, const matrix& B)
 	for (int i = 0; i < nB[0]; ++i)
 		for (int j = 0; j < nB[1]; ++j)
 			C(i + nA[0], j) = B(i, j);
+	freeIntTab2D(nA);
+	freeIntTab2D(nB);
 	return C;
 }
 
 matrix get_col(const matrix& A, int mv)
 {
 	int* n = get_size(A);
-	if (mv >= n[1] || mv < 0)
+	if (mv >= n[1] || mv < 0) {
+		freeIntTab2D(n);
 		throw string("matrix get_col(const matrix&,int):\nnumer kolmuny jest poza zakresem");
+	}
 	matrix B(n[0], 1);
 	for (int i = 0; i < n[0]; ++i)
 		B(i, 0) = A(i, mv);
+	freeIntTab2D(n);
 	return B;
 }
 
 matrix get_row(const matrix& A, int nv)
 {
 	int* n = get_size(A);
-	if (nv >= n[0] || nv < 0)
+	if (nv >= n[0] || nv < 0) {
+		freeIntTab2D(n);
 		throw string("matrix get_row(const matrix&,int):\nnumer wiersza jest poza zakresem");
+	}
 	matrix B(1, n[1]);
 	for (int j = 0; j < n[1]; ++j)
 		B(0, j) = A(nv, j);
+	freeIntTab2D(n);
 	return B;
 }
 
@@ -574,8 +656,10 @@ ostream& operator<<(ostream& OS, const matrix& A)
 				S[p] = SEP_SYMBOL;
 			OS << S << "; ";
 		}
-		if (i == nA[0] - 1)
+		if (i == nA[0] - 1) {
+			freeIntTab2D(nA);
 			return OS;
+		}
 		OS << endl;
 	}
 }
@@ -601,6 +685,7 @@ istream& operator>>(istream& IS, matrix& A)
 			if (IS.eof())
 				throw string("istream& operator>>(istream&,matrix&):\nzbyt malo liczb");
 		}
+	freeIntTab2D(nA);
 	return IS;
 }
 
@@ -608,6 +693,11 @@ int* get_size(const matrix& A)
 {
 	int* s = new int[2]{ A.n, A.m };
 	return s;
+}
+
+void freeIntTab2D(int*& T)
+{
+	delete[] T;
 }
 
 int get_len(const matrix& A)

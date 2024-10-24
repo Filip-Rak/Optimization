@@ -288,8 +288,43 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		solution xs(x0);
+		std::cout << "TEST\n";
+		xs.fit_fun(ff, ud1, ud2);
+		
+		do
+		{
+			solution xB = xs;
+			
+			xs = HJ_trial(ff, xB, s, ud1, ud2);
+			xs.fit_fun(ff, ud1, ud2);
+			if (m2d(xs.y) < m2d(xB.y))
+			{
+				do
+				{
+					solution _xB = xB;
+					xB = xs;
+					xs = (xB.x * 2.0) - _xB.x;
+					xs = HJ_trial(ff, xs, s, ud1, ud2);
+					if (solution::f_calls > Nmax)
+					{
+						throw string(string("Nie znaleziono przedzialu po " + Nmax) + " probach (f(x)<f(xB))");
+					}
+				} while (m2d(xs.y) < m2d(xB.y));
+				xs = xB;
+			}
+			else
+			{
+				s = alpha * s;
+			}
+			if (solution::f_calls > Nmax)
+			{
+				throw string("Nie znaleziono przedzialu po Nmax probach (L)");
+			}
 
+		} while (s >= epsilon);
+		Xopt = xs;
+		Xopt.flag = 0;
 		return Xopt;
 	}
 	catch (string ex_info)
@@ -302,8 +337,34 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 {
 	try
 	{
-		//Tu wpisz kod funkcji
+		const int DIM = 2;
+		
+		matrix dj(DIM, DIM);
+		
+		for(int k = 0; k < DIM; k++)
+			for (int l = 0; l < DIM; l++)
+				dj(k, l) = (l == k)? 1 : 0;
+			
+		for (int j = 0; j < DIM; j++)
+		{
+			solution xj = XB.x + (s * dj[j]);
+			xj.fit_fun(ff, ud1, ud2);
+			if ( xj.y < XB.y )
+			{
+				XB = xj;
+			}
+			else
+			{
+				xj = XB.x - (s * dj[j]);
+				xj.fit_fun(ff, ud1, ud2);
+				if (xj.y < XB.y)
+				{
+					XB = xj;
+				}
+			}
+		}
 
+		
 		return XB;
 	}
 	catch (string ex_info)
@@ -317,7 +378,19 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+
+		int i = 0;
+
+		const int DIM = 2;
+
+		matrix dj(DIM, DIM);
+
+		for (int k = 0; k < DIM; k++)
+			for (int l = 0; l < DIM; l++)
+				dj(k, l) = (l == k) ? 1 : 0;
+		
+		matrix lambdaj(DIM, DIM);
+		
 
 		return Xopt;
 	}

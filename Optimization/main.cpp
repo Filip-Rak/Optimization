@@ -26,7 +26,8 @@ int main()
 	try
 	{
 		// lab0();
-		lab1();
+		//lab1();
+		lab2();
 	}
 	catch (string EX_INFO)
 	{
@@ -215,7 +216,15 @@ void lab1()
 
 void lab2()
 {
+	matrix x1(2, 1);
+	x1(0) = 0.50;
+	x1(1) = 0.55;
 
+	double step = 0.50, alpha = 0.5, epsilon = 1e-4;
+	const int n_max = 1000;
+
+	solution x0 = HJ(ff2T, x1, step, alpha, epsilon, n_max);
+	std::cout << x0;
 }
 
 void lab3()
