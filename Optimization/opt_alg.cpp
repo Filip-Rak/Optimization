@@ -373,26 +373,113 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 	}
 }
 
+//x0 and s0 -> vertical vectors!
 solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double alpha, double beta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
 	{
-		solution Xopt;
-
-		int i = 0;
-
+		
 		const int DIM = 2;
+		//matrix: row column
+		matrix d(DIM, DIM); // DIM x DIM square matrix
+		for (int w = 0; w < DIM; w++)
+			for (int k = 0; k < DIM; k++)
+				d(w, k) = (w == k) ? 1 : 0;
+		matrix l(DIM, 0.0); // vertical vector
+		//matrix p(DIM, 1, 0.0); // vertical vector non-essential
+		matrix s(s0); // vertical vector
 
-		matrix dj(DIM, DIM);
+		solution xB(x0); // x -> vertical vector; y -> scalar
+		xB.fit_fun(ff, ud1, ud2);
+		solution Xopt(xB);
+		do
+		{
+			for (int j = 0; j < DIM; j++)
+			{
+				solution _x(xB.x + s(j) * d[j]);
+				if (_x.fit_fun(ff,ud1,ud2) < xB.y)
+				{
+					xB = _x;
+					for (int i = 0; i < DIM; i++) {
+						l(i) = l(i) + s(i);
+						s(i) = s(i) * alpha;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < DIM; i++) {
+						s(i) = -s(i) * beta;
+						//p(i) = p(i) + 1;
+					}
+				}
+			}
+			Xopt = xB;
+			bool zero = false;
 
-		for (int k = 0; k < DIM; k++)
-			for (int l = 0; l < DIM; l++)
-				dj(k, l) = (l == k) ? 1 : 0;
-		
-		matrix lambdaj(DIM, DIM);
-		
+			for (int j = 0; j < DIM; j++)
+			{
+				if (!(l(j) < 0 || l(j) > 0)) {
+					zero = true;
+					break;
+				}
+			}
 
+			if (!zero)
+			{
+				//change direction { square matrix d(DIM, DIM) }
+
+				matrix _D(d);
+				matrix _lQ(DIM, DIM);
+				for (int i = 0; i < DIM; i++) // row
+					for (int j = 0; j < DIM; j++) // column
+							_lQ(i, j) = (i <= j)? l(i) : 0.0;
+
+				_lQ = _D * _lQ;
+				matrix v(DIM,DIM);
+				v.set_col(norm(_lQ[0]), 0);
+
+				for (int _j = 1; _j < DIM; _j++) // v/Q matrix column
+				{
+					matrix sigma(DIM,1);
+					matrix t_lQ(trans(_lQ[_j]));
+					for (int j = 1; j < DIM; j++) // sigm/ column
+					{
+						sigma.set_col(
+							sigma[0] + (t_lQ * d[j])*d[j],
+							0);
+					}
+					v.set_col(norm(_lQ[_j] - sigma), _j);
+				}
+
+				d = v;
+
+				//end
+				
+				l = matrix(DIM, 1, 0.0);
+				//p = matrix(DIM, 1, 0.0);
+				s = s0;
+			}
+			if (solution::f_calls > Nmax)
+			{
+				Xopt.flag = -2;
+				break;
+				//throw string("Nie znaleziono przedzialu po Nmax probach (f_calls > Nmax)");
+			}
+			int max_s = 0;
+			for (int j = 1; j < DIM; j++)
+			{
+				if (s(max_s) < abs(s(j)))
+				{
+					max_s = j;
+				}
+			}
+			if (abs(s(max_s)) < epsilon)
+			{
+				break;
+			}
+		} while (true);
 		return Xopt;
+		
 	}
 	catch (string ex_info)
 	{

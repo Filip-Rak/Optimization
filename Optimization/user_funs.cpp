@@ -103,10 +103,10 @@ matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2)
 	return temp_deviation;
 }
 
-//matrix x - 2 element vertical vector 
+//matrix x -> 2-element vertical vector 
 matrix ff2T(matrix x, matrix ud1, matrix ud2)
 {
 	//std::cout << x;
-	return matrix( pow( x(0,0) ) + pow( x(1,0) )
-		- cos( 2.5 * M_PI * x(0,0) ) - cos(2.5 * M_PI * x(1,0) ) + 2 );
+	return matrix( pow( x(0) ) + pow( x(1) )
+		- cos( 2.5 * M_PI * x(0) ) - cos(2.5 * M_PI * x(1) ) + 2 );
 }
