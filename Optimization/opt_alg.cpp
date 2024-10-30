@@ -289,7 +289,9 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 	{
 		solution Xopt;
 		solution xs(x0);
-		std::cout << "TEST\n";
+
+		//std::cout << xs.x << std::endl;
+
 		xs.fit_fun(ff, ud1, ud2);
 		
 		do
@@ -373,7 +375,6 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 	}
 }
 
-//x0 and s0 -> vertical vectors!
 solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double alpha, double beta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
@@ -382,11 +383,13 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		const int DIM = 2;
 		//matrix: row column
 		matrix d(DIM, DIM); // DIM x DIM square matrix
+
 		for (int w = 0; w < DIM; w++)
 			for (int k = 0; k < DIM; k++)
 				d(w, k) = (w == k) ? 1 : 0;
-		matrix l(DIM, 0.0); // vertical vector
-		//matrix p(DIM, 1, 0.0); // vertical vector non-essential
+
+		matrix l(DIM, 1, 0.0); // vertical vector
+		matrix p(DIM, 1, 0.0); // vertical vector non-essential
 		matrix s(s0); // vertical vector
 
 		solution xB(x0); // x -> vertical vector; y -> scalar
@@ -409,7 +412,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				{
 					for (int i = 0; i < DIM; i++) {
 						s(i) = -s(i) * beta;
-						//p(i) = p(i) + 1;
+						p(i) = p(i) + 1;
 					}
 				}
 			}
@@ -418,7 +421,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 
 			for (int j = 0; j < DIM; j++)
 			{
-				if (!(l(j) < 0 || l(j) > 0)) {
+				if (p(j) == 0) {
 					zero = true;
 					break;
 				}
@@ -436,19 +439,28 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 
 				_lQ = _D * _lQ;
 				matrix v(DIM,DIM);
-				v.set_col(norm(_lQ[0]), 0);
-
+				
+				
+				v.set_col(_lQ[0]/(norm(_lQ[0])), 0);
+				std::cout << "K\n";
 				for (int _j = 1; _j < DIM; _j++) // v/Q matrix column
 				{
 					matrix sigma(DIM,1);
 					matrix t_lQ(trans(_lQ[_j]));
-					for (int j = 1; j < DIM; j++) // sigm/ column
+
+					for (int k = 0; k < _j; k++) // sigm column
 					{
 						sigma.set_col(
-							sigma[0] + (t_lQ * d[j])*d[j],
+							sigma[0] + (t_lQ * d[k]) * d[k],
 							0);
+						
 					}
-					v.set_col(norm(_lQ[_j] - sigma), _j);
+					
+					matrix pk = _lQ[_j] - sigma[0];
+					std::cout << pk << std::endl;
+					std::cout << norm(pk) << std::endl;
+					v.set_col(pk/norm(pk), _j);
+					
 				}
 
 				d = v;
@@ -456,7 +468,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				//end
 				
 				l = matrix(DIM, 1, 0.0);
-				//p = matrix(DIM, 1, 0.0);
+				p = matrix(DIM, 1, 0.0);
 				s = s0;
 			}
 			if (solution::f_calls > Nmax)

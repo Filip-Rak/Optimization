@@ -216,15 +216,63 @@ void lab1()
 
 void lab2()
 {
-	matrix x1(2, 1);
-	x1(0) = 0.50;
-	x1(1) = 0.55;
+	// Common arguments
+	double epsilon = 1e-05;
+	int n_max = 1000;
+	double contr = 0.5, expa = 1.5; // for HJ: contr -> alpha, for Rosen: expa -> alpha, contr -> beta
 
-	double step = 0.50, alpha = 0.5, epsilon = 1e-4;
-	const int n_max = 1000;
+	// ---------- Table 1 and Table 2 ----------
+	
+	// Init random number generator
+	srand(time(NULL));
 
-	solution x0 = HJ(ff2T, x1, step, alpha, epsilon, n_max);
-	std::cout << x0;
+	// Range for defined local minimums
+	double x_min = -1.0, x_max = 1.0;  // Boundries for random number generation
+
+	// Set step size for testing
+	double step[3] = { .75, .5, .25 }; // Step size for each iteration
+
+	// File output
+	const char delimiter = '\t';
+	const string OUTPUT_PATH = "Output/";
+	ofstream tfun_file(OUTPUT_PATH + "out_1_tfun.txt");
+
+	// Check if the file has been correctly opened
+	if (!tfun_file.is_open())
+		return;
+
+	for (int j = 0; j < 3; j++)
+	{
+
+		for (int i = 0; i < 100; i++)
+		{
+			// Draw a 2D point
+			matrix x(2,1);
+	
+			x(0) = x_min + static_cast<double>(rand()) / RAND_MAX * (x_max - x_min);
+			x(1) = x_min + static_cast<double>(rand()) / RAND_MAX * (x_max - x_min);
+			
+			tfun_file << x(0) << delimiter << x(1) << delimiter;
+
+			solution y0 = HJ(ff2T, x, step[j], contr, epsilon, n_max);
+			tfun_file << y0.x(0) << delimiter << y0.x(1) << delimiter
+				<< m2d(y0.y) << delimiter << solution::f_calls << delimiter 
+				<< (abs(y0.x(0)) < epsilon && abs(y0.x(1)) < epsilon) << delimiter;
+			solution::clear_calls();
+
+			solution y1 = Rosen(ff2T, x, matrix(2, 1, step[j]), expa, contr, epsilon, n_max);
+			tfun_file << y1.x(0) << delimiter << y1.x(1) << delimiter
+				<< m2d(y1.y) << delimiter << solution::f_calls << delimiter 
+				<< (abs(y1.x(0)) < epsilon && abs(y1.x(1)) < epsilon);
+			solution::clear_calls();
+
+			tfun_file << std::endl;
+		}
+
+	}
+
+	// Close file
+	tfun_file.close();
 }
 
 void lab3()
