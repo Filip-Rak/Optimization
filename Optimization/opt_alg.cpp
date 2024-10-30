@@ -395,6 +395,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		solution xB(x0); // x -> vertical vector; y -> scalar
 		xB.fit_fun(ff, ud1, ud2);
 		solution Xopt(xB);
+		int max_s;
 		do
 		{
 			for (int j = 0; j < DIM; j++)
@@ -421,7 +422,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 
 			for (int j = 0; j < DIM; j++)
 			{
-				if (p(j) == 0) {
+				if (p(j) == 0 || abs(l(j)) < epsilon ) {
 					zero = true;
 					break;
 				}
@@ -435,14 +436,17 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				matrix _lQ(DIM, DIM);
 				for (int i = 0; i < DIM; i++) // row
 					for (int j = 0; j < DIM; j++) // column
-							_lQ(i, j) = (i <= j)? l(i) : 0.0;
+						_lQ(i, j) = (i >= j) ? l(i) : 0.0;
 
 				_lQ = _D * _lQ;
+				//std::cout << "_l\n";
+				//std::cout << _lQ << std::endl;
 				matrix v(DIM,DIM);
-				
-				
+				//std::cout << "0:\nv:\n";
+				//std::cout << _lQ[0] << std::endl;
+				//std::cout << "norm: " << norm(_lQ[0]) << std::endl;
 				v.set_col(_lQ[0]/(norm(_lQ[0])), 0);
-				std::cout << "K\n";
+				
 				for (int _j = 1; _j < DIM; _j++) // v/Q matrix column
 				{
 					matrix sigma(DIM,1);
@@ -457,14 +461,16 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 					}
 					
 					matrix pk = _lQ[_j] - sigma[0];
-					std::cout << pk << std::endl;
-					std::cout << norm(pk) << std::endl;
+					//std::cout << _j <<":\nv:\n";
+					//std::cout << pk << std::endl;
+					//std::cout << "norm: " << norm(pk) << std::endl;
 					v.set_col(pk/norm(pk), _j);
 					
 				}
-
+				//std::cout << "d!\n";
+				//std::cout << d << std::endl;
 				d = v;
-
+				//std::cout << d << std::endl;
 				//end
 				
 				l = matrix(DIM, 1, 0.0);
@@ -477,7 +483,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				break;
 				//throw string("Nie znaleziono przedzialu po Nmax probach (f_calls > Nmax)");
 			}
-			int max_s = 0;
+			max_s = 0;
 			for (int j = 1; j < DIM; j++)
 			{
 				if (s(max_s) < abs(s(j)))
@@ -489,7 +495,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 			{
 				break;
 			}
-		} while (true);
+		} while (abs(s(max_s)) < epsilon);
 		return Xopt;
 		
 	}
