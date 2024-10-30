@@ -33,9 +33,9 @@ matrix df0(double t, matrix Y, matrix ud1, matrix ud2)
 	return dY;
 }
 
-
-// Own Functions
+// Own Functions LAB1
 // ------------------
+
 matrix ff1T(matrix x, matrix ud1, matrix ud2)
 {
 	double t = -pow(0.1 * m2d(x) - 2 * M_PI,2);
@@ -103,10 +103,11 @@ matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2)
 	return temp_deviation;
 }
 
-//matrix x -> 2-element vertical vector 
+// Own Functions LAB1
+// ------------------
+
 matrix ff2T(matrix x, matrix ud1, matrix ud2)
 {
-	//std::cout << x;
 	return matrix( pow( x(0) ) + pow( x(1) )
 		- cos( 2.5 * M_PI * x(0) ) - cos(2.5 * M_PI * x(1) ) + 2 );
 }
