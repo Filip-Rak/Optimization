@@ -217,9 +217,9 @@ void lab1()
 void lab2()
 {
 	// Common arguments
-	double epsilon = 1e-05;
+	double epsilon = 1e-06;
 	int n_max = 1000;
-	double contr = 0.5, expa = 1.5; // for HJ: contr -> alpha, for Rosen: expa -> alpha, contr -> beta
+	double contr = 0.5, expa = 2; // for HJ: contr -> alpha, for Rosen: expa -> alpha, contr -> beta
 
 	// ---------- Table 1 and Table 2 ----------
 	

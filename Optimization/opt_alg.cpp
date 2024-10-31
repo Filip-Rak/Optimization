@@ -401,7 +401,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 			for (int j = 0; j < DIM; j++)
 			{
 				solution _x(xB.x + s(j) * d[j]);
-				if (_x.fit_fun(ff,ud1,ud2) < xB.y)
+				if (_x.fit_fun(ff, ud1, ud2) <  xB.y)
 				{
 					xB = _x;
 					for (int i = 0; i < DIM; i++) {
@@ -419,7 +419,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 			}
 			Xopt = xB;
 			bool zero = false;
-
+			//std::cout << "----\n"<< Xopt.x << "\n----\n";
 			for (int j = 0; j < DIM; j++)
 			{
 				if (p(j) == 0 || abs(l(j)) < epsilon ) {
@@ -486,16 +486,13 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 			max_s = 0;
 			for (int j = 1; j < DIM; j++)
 			{
-				if (s(max_s) < abs(s(j)))
+				if (abs(s(max_s)) < abs(s(j)))
 				{
 					max_s = j;
 				}
 			}
-			if (abs(s(max_s)) < epsilon)
-			{
-				break;
-			}
-		} while (abs(s(max_s)) < epsilon);
+			
+		} while (abs(s(max_s)) >= epsilon);
 		return Xopt;
 		
 	}
