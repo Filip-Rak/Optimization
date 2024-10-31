@@ -98,7 +98,7 @@ matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2)
 			max_temp_b = results[1](i, 2);
 	}
 
-	// Get dabsolute deviation from the temp of 50
+	// Get absolute deviation from the temp of 50
 	double temp_deviation = abs(max_temp_b - 50);
 	return temp_deviation;
 }
