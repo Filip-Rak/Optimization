@@ -142,8 +142,11 @@ matrix df2(double t, matrix Y, matrix ud1, matrix ud2)
 	return dY;
 }
 
-matrix ff2R(matrix x, matrix k1, matrix k2)
+matrix ff2R(matrix x, matrix ud1, matrix ud2)
 {
+	matrix k1 = x(0);
+	matrix k2 = x(1);
+
 	// Initial conditions
 	double start_time = 0.0;
 	double end_time = 100.0;
