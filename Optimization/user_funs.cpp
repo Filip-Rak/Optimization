@@ -147,7 +147,7 @@ matrix ff2R(matrix x, matrix k1, matrix k2)
 	// Initial conditions
 	double start_time = 0.0;
 	double end_time = 100.0;
-	double time_step = 0.01;
+	double time_step = 0.1;
 
 	// Initial arm properties
 	double start_angle = 0.0;
@@ -167,17 +167,6 @@ matrix ff2R(matrix x, matrix k1, matrix k2)
 		double M_t = m2d(k1) * alpha_diff + m2d(k2) * omega_diff;
 
 		Q += (10 * pow(alpha_diff, 2) + pow(omega_diff, 2) + pow(M_t, 2)) * time_step;
-
-		// Debugging output
-		if (i < 10) 
-		{ 
-			std::cout 
-				<< "i: " << i
-				<< ", alpha_diff: " << alpha_diff
-				<< ", omega_diff: " << omega_diff
-				<< ", M_t: " << M_t
-				<< ", Q (running total): " << Q << "\n";
-		}
 	}
 
 	// Memory cleanup
