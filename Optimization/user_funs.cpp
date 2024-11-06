@@ -103,11 +103,86 @@ matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2)
 	return temp_deviation;
 }
 
-// Own Functions LAB1
+// Own Functions LAB2
 // ------------------
 
 matrix ff2T(matrix x, matrix ud1, matrix ud2)
 {
 	return matrix( pow( x(0) ) + pow( x(1) )
 		- cos( 2.5 * M_PI * x(0) ) - cos(2.5 * M_PI * x(1) ) + 2 );
+}
+
+matrix df2(double t, matrix Y, matrix ud1, matrix ud2)
+{
+	// Physical parameters
+	double m1 = 1.0;	// Arm mass
+	double m2 = 5.0;	// Weight Mass
+	double l = 1.0;		// Arm length
+	double b = 0.5;		// Friction coefficient
+	double I = ((m1 / 3) + m2) * pow(l, 2);
+
+	// Control values
+	double k1 = m2d(ud1);
+	double k2 = m2d(ud2);
+
+	// Targets
+	double alpha_target = M_PI;	// Target angle in radians
+	double omega_target = 0.0;	// Target speed
+
+	// Getting the moment of force
+	double alpha_diff = alpha_target - Y(0);
+	double omega_diff = omega_target - Y(1);
+	double M_t = k1 * alpha_diff + k2 * omega_diff;
+
+	// Get derivatives
+	matrix dY(2, 1);
+	dY(0) = Y(1);	// Derivative of an angle is speed
+	dY(1) = (M_t - b * Y(1)) / I;	// Derivative of speed
+
+	return dY;
+}
+
+matrix ff2R(matrix x, matrix k1, matrix k2)
+{
+	// Initial conditions
+	double start_time = 0.0;
+	double end_time = 100.0;
+	double time_step = 0.01;
+
+	// Initial arm properties
+	double start_angle = 0.0;
+	double start_speed = 0.0;
+	matrix Y0 = matrix(2, new double[2] {start_angle, start_speed});
+
+	// Arm motion simulation
+	matrix* results = solve_ode(df2, start_time, time_step, end_time, Y0, k1, k2);
+
+	// Get the quality function of Q
+	double Q = 0.0;
+	for (int i = 0; i < get_len(results[0]); i++)
+	{
+		double alpha_diff = results[1](i, 0) - M_PI;	// Target is pi rad
+		double omega_diff = results[1](i, 1);			// Target is speed of 0
+
+		double M_t = m2d(k1) * alpha_diff + m2d(k2) * omega_diff;
+
+		Q += (10 * pow(alpha_diff, 2) + pow(omega_diff, 2) + pow(M_t, 2)) * time_step;
+
+		// Debugging output
+		if (i < 10) 
+		{ 
+			std::cout 
+				<< "i: " << i
+				<< ", alpha_diff: " << alpha_diff
+				<< ", omega_diff: " << omega_diff
+				<< ", M_t: " << M_t
+				<< ", Q (running total): " << Q << "\n";
+		}
+	}
+
+	// Memory cleanup
+	delete[] results;
+
+	// Return the result
+	return matrix(Q);
 }

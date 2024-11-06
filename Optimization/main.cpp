@@ -26,7 +26,7 @@ int main()
 	try
 	{
 		// lab0();
-		//lab1();
+		// lab1();
 		lab2();
 	}
 	catch (string EX_INFO)
@@ -86,7 +86,7 @@ void lab1()
 
 	// File output
 	const char delimiter = '\t';
-	const string OUTPUT_PATH = "Output/";
+	const string OUTPUT_PATH = "Output/lab_1/";
 	ofstream exp_file(OUTPUT_PATH + "out_1_1_exp.txt");
 	ofstream fib_file(OUTPUT_PATH + "out_1_2_fib.txt");
 	ofstream lag_file(OUTPUT_PATH + "out_1_3_lag.txt");
@@ -234,7 +234,7 @@ void lab2()
 
 	// File output
 	const char delimiter = '\t';
-	const string OUTPUT_PATH = "Output/";
+	const string OUTPUT_PATH = "Output/lab_2/";
 	ofstream tfun_file(OUTPUT_PATH + "out_1_tfun.txt");
 
 	// Check if the file has been correctly opened
@@ -273,6 +273,10 @@ void lab2()
 
 	// Close file
 	tfun_file.close();
+
+	std::cout << ff2R(NULL, 5, 5) << "\n";
+
+
 }
 
 void lab3()
