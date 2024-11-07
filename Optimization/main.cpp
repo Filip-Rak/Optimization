@@ -235,7 +235,7 @@ void lab2()
 	double step[3] = { .75, .5, .25 }; // Step size for each iteration
 
 	// File output
-	const char delimiter = ';';
+	const char delimiter = '\t';
 	const string OUTPUT_PATH = "Output/lab_2/";
 	ofstream tfun_file(OUTPUT_PATH + "out_1_tfun.txt");
 
@@ -285,7 +285,7 @@ void lab2()
 	ofstream rosen_file(OUTPUT_PATH + "out_3_2_rosen.txt");
 	
 	// Problem parameters
-	double starting_step = 1;
+	double starting_step = 1.0;
 	double k_values[2] = { 2.0, 6.0 };
 	matrix x0 = matrix(2, k_values);
 
