@@ -27,3 +27,6 @@ matrix simulate_flow_temp(matrix x, matrix ud1, matrix ud2);
 // @return matrix - matrix 1x1 (scalar)
 matrix ff2T(matrix, matrix = NAN, matrix = NAN);
 
+matrix df2(double t, matrix Y, matrix ud1, matrix ud2);
+
+matrix ff2R(matrix x, matrix k1, matrix k2);

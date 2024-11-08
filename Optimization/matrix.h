@@ -10,7 +10,7 @@
 #include<chrono>
 using namespace std;
 
-#define SEP_SYMBOL ','
+#define SEP_SYMBOL '.'
 
 class matrix
 {

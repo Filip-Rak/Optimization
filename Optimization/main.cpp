@@ -26,7 +26,7 @@ int main()
 	try
 	{
 		// lab0();
-		//lab1();
+		// lab1();
 		lab2();
 	}
 	catch (string EX_INFO)
@@ -86,7 +86,7 @@ void lab1()
 
 	// File output
 	const char delimiter = '\t';
-	const string OUTPUT_PATH = "Output/";
+	const string OUTPUT_PATH = "Output/lab_1/";
 	ofstream exp_file(OUTPUT_PATH + "out_1_1_exp.txt");
 	ofstream fib_file(OUTPUT_PATH + "out_1_2_fib.txt");
 	ofstream lag_file(OUTPUT_PATH + "out_1_3_lag.txt");
@@ -223,6 +223,8 @@ void lab2()
 
 	// ---------- Table 1 and Table 2 ----------
 	
+	std::cout << "Solving for Table 1 and Table 2...";
+
 	// Init random number generator
 	srand(time(NULL));
 
@@ -234,7 +236,7 @@ void lab2()
 
 	// File output
 	const char delimiter = '\t';
-	const string OUTPUT_PATH = "Output/";
+	const string OUTPUT_PATH = "Output/lab_2/";
 	ofstream tfun_file(OUTPUT_PATH + "out_1_tfun.txt");
 
 	// Check if the file has been correctly opened
@@ -273,6 +275,71 @@ void lab2()
 
 	// Close file
 	tfun_file.close();
+
+	// ---------- Table 3 ----------
+
+	std::cout << "\nSolving for Table 3...";
+
+	// Open files
+	ofstream hook_file(OUTPUT_PATH + "out_3_1_hook.txt");
+	ofstream rosen_file(OUTPUT_PATH + "out_3_2_rosen.txt");
+	
+	// Problem parameters
+	double starting_step = 1.0;
+	double k_values[2] = { 2.0, 6.0 };
+	matrix x0 = matrix(2, k_values);
+
+	// Save the results of Hook's method
+	solution hook_opt = HJ(ff2R, x0, starting_step, contr, epsilon, n_max);
+	hook_file 
+		<< hook_opt.x(0) << delimiter  << hook_opt.x(1) << delimiter
+		<< m2d(hook_opt.y) << delimiter << hook_opt.f_calls << delimiter 
+		<< hook_opt.flag;
+	solution::clear_calls();
+
+	// Save the results of Rosenbrock's method
+	solution rosen_opt = Rosen(ff2R, x0, matrix(2, 1, starting_step), expa, contr, epsilon, n_max);
+	rosen_file
+		<< rosen_opt.x(0) << delimiter << rosen_opt.x(1) << delimiter
+		<< m2d(rosen_opt.y) << delimiter << rosen_opt.f_calls << delimiter
+		<< rosen_opt.flag;
+	solution::clear_calls();
+
+	// Close the files
+	hook_file.close();
+	rosen_file.close();
+
+	// ---------- Simulation ----------
+
+	std::cout << "\nSolving for Simulation table...\n";
+
+	// Open files
+	hook_file.open(OUTPUT_PATH + "out_4_1_hook.txt");
+	rosen_file.open(OUTPUT_PATH + "out_4_2_rosen.txt");
+
+	// Initial condition
+	matrix Y0 = matrix(2, new double[2] {0.0, 0.0});	// Start angle and speed
+
+	// Time parameters
+	double start_time = 0.0;
+	double end_time = 100.0;
+	double time_step = 0.1;
+
+	// Solve for Hook's optimization
+	matrix ud1 = hook_opt.x(0);	// K1
+	matrix ud2 = hook_opt.x(1);	// K2
+	matrix* hook_results = solve_ode(df2, start_time, time_step, end_time, Y0, ud1, ud2);
+	hook_file << hook_results[1];
+
+	// Solve for Rosen's optimization
+	ud1 = rosen_opt.x(0); // K1
+	ud2 = rosen_opt.x(1); // K2
+	matrix* rosen_results = solve_ode(df2, start_time, time_step, end_time, Y0, ud1, ud2);
+	rosen_file << rosen_results[1];
+
+	// Close the files
+	hook_file.close();
+	rosen_file.close();
 }
 
 void lab3()

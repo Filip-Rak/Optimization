@@ -404,17 +404,17 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				if (_x.fit_fun(ff, ud1, ud2) <  xB.y)
 				{
 					xB = _x;
-					for (int i = 0; i < DIM; i++) {
-						l(i) = l(i) + s(i);
-						s(i) = s(i) * alpha;
-					}
+					
+					l(j) = l(j) + s(j);
+					s(j) = s(j) * alpha;
+					
 				}
 				else
 				{
-					for (int i = 0; i < DIM; i++) {
-						s(i) = -s(i) * beta;
-						p(i) = p(i) + 1;
-					}
+					
+					s(j) = -s(j) * beta;
+					p(j) = p(j) + 1;
+					
 				}
 			}
 			Xopt = xB;
