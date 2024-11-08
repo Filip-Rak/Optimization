@@ -289,16 +289,15 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 	{
 		solution Xopt;
 		solution xs(x0);
-
-		//std::cout << xs.x << std::endl;
+		matrix ud(x0);
 
 		xs.fit_fun(ff, ud1, ud2);
-		
+		Xopt.flag = 0;
 		do
 		{
 			solution xB = xs;
 			
-			xs = HJ_trial(ff, xB, s, ud1, ud2);
+			xs = HJ_trial(ff, xB, s, ud1, ud2); // check all directions from given base
 			xs.fit_fun(ff, ud1, ud2);
 			if (m2d(xs.y) < m2d(xB.y))
 			{
@@ -306,27 +305,36 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 				{
 					solution _xB = xB;
 					xB = xs;
-					xs = (xB.x * 2.0) - _xB.x;
-					xs = HJ_trial(ff, xs, s, ud1, ud2);
+					xs = (xB.x * 2.0) - _xB.x; // calculate new point based on 2 last bases
+					xs = HJ_trial(ff, xs, s, ud1, ud2); // check all directions from this new point
 					if (solution::f_calls > Nmax)
 					{
-						throw string("Nie znaleziono przedzialu po Nmax probach (f(x)<f(xB))");
+						Xopt.flag = -1;
+						break;
+						//throw string("Nie znaleziono przedzialu po Nmax probach (f(x)<f(xB))");
 					}
-				} while (m2d(xs.y) < m2d(xB.y));
+				} while (m2d(xs.y) < m2d(xB.y)); // end this loop when the algorithm couldn't find better base with given step
 				xs = xB;
+				
 			}
 			else
 			{
+				// if the search function is unable to find any better point in proximity of the base, make step smaller
 				s = alpha * s;
 			}
 			if (solution::f_calls > Nmax)
 			{
-				throw string("Nie znaleziono przedzialu po Nmax probach (L)");
+				if(!Xopt.flag)
+					Xopt.flag = -2;
+				break;
+				//throw string("Nie znaleziono przedzialu po Nmax probach (L)");
 			}
-
+			ud.add_col(xs.x);
+			// if step size is smaller than targeted precision, return the last calculated point
 		} while (s >= epsilon);
+		
 		Xopt = xs;
-		Xopt.flag = 0;
+		Xopt.ud = ud;
 		return Xopt;
 	}
 	catch (string ex_info)
@@ -337,6 +345,7 @@ solution HJ(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alp
 
 solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, matrix ud1, matrix ud2)
 {
+
 	try
 	{
 		const int DIM = 2;
@@ -349,14 +358,16 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 			
 		for (int j = 0; j < DIM; j++)
 		{
-			solution xj = XB.x + (s * dj[j]);
+			// calculate new point, if new value is closer to minimum, change point to be searched 
+			solution xj = XB.x + (s * dj[j]); 
 			xj.fit_fun(ff, ud1, ud2);
-			if ( xj.y < XB.y )
+			if ( xj.y < XB.y ) 
 			{
 				XB = xj;
 			}
 			else
 			{
+				// if not, check if the mirror point is better
 				xj = XB.x - (s * dj[j]);
 				xj.fit_fun(ff, ud1, ud2);
 				if (xj.y < XB.y)
@@ -383,6 +394,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		const int DIM = 2;
 		//matrix: row column
 		matrix d(DIM, DIM); // DIM x DIM square matrix
+		matrix ud(x0);
 
 		for (int w = 0; w < DIM; w++)
 			for (int k = 0; k < DIM; k++)
@@ -395,13 +407,14 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		solution xB(x0); // x -> vertical vector; y -> scalar
 		xB.fit_fun(ff, ud1, ud2);
 		solution Xopt(xB);
+		Xopt.flag = 0;
 		int max_s;
 		do
 		{
 			for (int j = 0; j < DIM; j++)
 			{
 				solution _x(xB.x + s(j) * d[j]);
-				if (_x.fit_fun(ff, ud1, ud2) <  xB.y)
+				if (_x.fit_fun(ff, ud1, ud2) <  xB.y) // better solution, change base, extend searching reach
 				{
 					xB = _x;
 					
@@ -409,7 +422,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 					s(j) = s(j) * alpha;
 					
 				}
-				else
+				else // report the failure, change step (reverse it and make it bigger)
 				{
 					
 					s(j) = -s(j) * beta;
@@ -417,34 +430,35 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 					
 				}
 			}
+			// after calculating new base point, replace the old answer with it
 			Xopt = xB;
+
+			// check, if there was at least one success and one failure on each orthonormal direction
 			bool zero = false;
-			//std::cout << "----\n"<< Xopt.x << "\n----\n";
 			for (int j = 0; j < DIM; j++)
 			{
-				if (p(j) == 0 || abs(l(j)) < epsilon ) {
-					zero = true;
+				if (p(j) == 0 || abs(l(j)) < epsilon ) { // compare double with given precision
+					zero = true; // even if only one direction have not been examied, do not make any changes
 					break;
 				}
 			}
 
 			if (!zero)
 			{
-				//change direction { square matrix d(DIM, DIM) }
+				// change direction { square matrix d(DIM, DIM) }
+				matrix _D(d); // square matrix initialised with d matrix values
+				matrix _lQ(DIM, DIM); // empty square matrix (DIM, DIM)
 
-				matrix _D(d);
-				matrix _lQ(DIM, DIM);
+				// create triangle matrix based on lambda values
 				for (int i = 0; i < DIM; i++) // row
 					for (int j = 0; j < DIM; j++) // column
 						_lQ(i, j) = (i >= j) ? l(i) : 0.0;
 
+				// calulate Q square matrix (DIM, DIM)
 				_lQ = _D * _lQ;
-				//std::cout << "_l\n";
-				//std::cout << _lQ << std::endl;
+
+				// create and set new directional values, starting from first column (first direction vector)
 				matrix v(DIM,DIM);
-				//std::cout << "0:\nv:\n";
-				//std::cout << _lQ[0] << std::endl;
-				//std::cout << "norm: " << norm(_lQ[0]) << std::endl;
 				v.set_col(_lQ[0]/(norm(_lQ[0])), 0);
 				
 				for (int _j = 1; _j < DIM; _j++) // v/Q matrix column
@@ -452,27 +466,23 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 					matrix sigma(DIM,1);
 					matrix t_lQ(trans(_lQ[_j]));
 
-					for (int k = 0; k < _j; k++) // sigm column
+					for (int k = 0; k < _j; k++) // sigm column, ie. current dimension which have it's orientation calculated, all vectors must be orthogonal
 					{
 						sigma.set_col(
 							sigma[0] + (t_lQ * d[k]) * d[k],
 							0);
 						
 					}
-					
+					// pk represents vertical vector, which must be normalised 
 					matrix pk = _lQ[_j] - sigma[0];
-					//std::cout << _j <<":\nv:\n";
-					//std::cout << pk << std::endl;
-					//std::cout << "norm: " << norm(pk) << std::endl;
 					v.set_col(pk/norm(pk), _j);
 					
 				}
-				//std::cout << "d!\n";
-				//std::cout << d << std::endl;
-				d = v;
-				//std::cout << d << std::endl;
-				//end
 				
+				// override previous direction(orientation) matrix with the new one
+				d = v;
+				
+				// reverse lambda, failure and step matrixes to initial values
 				l = matrix(DIM, 1, 0.0);
 				p = matrix(DIM, 1, 0.0);
 				s = s0;
@@ -483,6 +493,8 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				break;
 				//throw string("Nie znaleziono przedzialu po Nmax probach (f_calls > Nmax)");
 			}
+			ud.add_col(Xopt.x);
+			// find the largest step and compare it to the targeted precision
 			max_s = 0;
 			for (int j = 1; j < DIM; j++)
 			{
@@ -493,6 +505,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 			}
 			
 		} while (abs(s(max_s)) >= epsilon);
+		Xopt.ud = ud;
 		return Xopt;
 		
 	}

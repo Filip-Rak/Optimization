@@ -243,6 +243,9 @@ void lab2()
 	if (!tfun_file.is_open())
 		return;
 
+	bool found_candidate = false;
+	solution H0, R0;
+
 	for (int j = 0; j < 3; j++)
 	{
 
@@ -250,32 +253,55 @@ void lab2()
 		{
 			// Draw a 2D point
 			matrix x(2,1);
-	
 			x(0) = x_min + static_cast<double>(rand()) / RAND_MAX * (x_max - x_min);
 			x(1) = x_min + static_cast<double>(rand()) / RAND_MAX * (x_max - x_min);
 			
+			// Save points in the file
 			tfun_file << x(0) << delimiter << x(1) << delimiter;
-
+			
+			// Calculate and write found answer to the same file, Hooke-Jeeves method.
 			solution y0 = HJ(ff2T, x, step[j], contr, epsilon, n_max);
 			tfun_file << y0.x(0) << delimiter << y0.x(1) << delimiter
 				<< m2d(y0.y) << delimiter << solution::f_calls << delimiter 
-				<< (abs(y0.x(0)) < epsilon && abs(y0.x(1)) < epsilon) << delimiter;
+				<< (abs(m2d(y0.y)) < epsilon) << delimiter;
 			solution::clear_calls();
 
+			// Calculate and write found answer to the same file, Rosenbrock method.
 			solution y1 = Rosen(ff2T, x, matrix(2, 1, step[j]), expa, contr, epsilon, n_max);
 			tfun_file << y1.x(0) << delimiter << y1.x(1) << delimiter
 				<< m2d(y1.y) << delimiter << solution::f_calls << delimiter 
-				<< (abs(y1.x(0)) < epsilon && abs(y1.x(1)) < epsilon);
+				<< (abs(m2d(y1.y)) < epsilon);
 			solution::clear_calls();
+			if (!found_candidate && (abs(m2d(y1.y)) < epsilon) && (abs(m2d(y0.y)) < epsilon))
+			{
+				found_candidate = true;
+				H0 = y0;
+				R0 = y1;
+			}
 
 			tfun_file << std::endl;
 		}
 
 	}
-
 	// Close file
 	tfun_file.close();
 
+	ofstream graph_file(OUTPUT_PATH + "out_2_tfun.txt");
+	if (!graph_file.is_open())
+		return;
+	int* hl = get_size(H0.ud);
+	for (int i = 0; i < hl[1]; i++)
+		graph_file << H0.ud(0, i) << delimiter << H0.ud(1, i) << std::endl;
+	
+	graph_file << "\n-----\n";
+	delete[] hl;
+	hl = get_size(R0.ud);
+	for (int i = 0; i < hl[1]; i++)
+		graph_file << R0.ud(0, i) << delimiter << R0.ud(1, i) << std::endl;
+	
+	delete[] hl;
+	graph_file.close();
+	return;
 	// ---------- Table 3 ----------
 
 	std::cout << "\nSolving for Table 3...";
