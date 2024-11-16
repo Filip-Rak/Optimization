@@ -27,7 +27,8 @@ int main()
 	{
 		// lab0();
 		// lab1();
-		lab2();
+		// lab2();
+		lab3();
 	}
 	catch (string EX_INFO)
 	{
@@ -370,7 +371,12 @@ void lab2()
 
 void lab3()
 {
-
+	matrix test(2, 1);
+	test(0) = -0.5;
+	test(1) = 0.5;
+	std::cout << m2d(ff3T(test, NULL, NULL)) << std::endl;
+	solution k = sym_NM(ff3T, test, 1.0, 1.0, 0.5, 2.0, 0.5, 1e-2, 1000, NAN, NAN);
+	std::cout << k << std::endl;
 }
 
 void lab4()

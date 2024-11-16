@@ -178,3 +178,12 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2)
 	// Return the result
 	return matrix(Q);
 }
+
+// Own Functions LAB3
+// ------------------
+
+matrix ff3T(matrix x, matrix ud1, matrix ud2) {
+	double tk = M_PI * std::sqrt(m2d(pow(x(0) * M_1_PI) + pow(x(1) * M_1_PI)));
+	return sin(tk)/tk;
+	//return pow(x(0), 2) + pow(x(1), 2); // example from lecture
+}
