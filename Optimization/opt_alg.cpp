@@ -515,24 +515,44 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 	}
 }
 
-matrix pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1, matrix ud2)
+solution pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try {
-		matrix Xopt;
-		//Tu wpisz kod funkcji
+		solution xi(x0), x_i;
+		xi.flag = 0;
+		matrix init_v_S(2, 1);
+		init_v_S(0) = c;
+		init_v_S(1) = ud2(0);
+		double nm = 0;
+	
+		do
+		{
+			x_i = xi;
+			xi = sym_NM(ff,xi.x,ud1(0),ud1(1),ud1(2),ud1(3), ud1(4), ud1(5), Nmax, init_v_S );
+//std::cout << "PEN: \n" << x_i << "\n" << xi << "\n";
 
-		return Xopt;
+			if (solution::f_calls > Nmax)
+			{
+				xi.flag = -2;
+				break;
+			}
+			init_v_S(0) = c*dc;
+			nm = norm(xi.x - x_i.x);
+
+		} while (nm >= epsilon);
+		
+		return xi;
 	}
 	catch (string ex_info)
 	{
 		throw ("matrix pen(...):\n" + ex_info);
 	}
 }
-
 solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alpha, double beta, double gamma, double delta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
 	{
+		
 		solution Xopt;
 		int g_min = 0;
 		Xopt.flag = 0;
@@ -549,7 +569,7 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 		solution::f_calls += 1 + DIM;
 		matrix p_f(DIM+1, 1);
 		for (int i = 0; i <= DIM; i++)
-			p_f(i) = m2d(ff(p[i], NAN, NAN)); // returns matrix 1x1
+			p_f(i) = m2d(ff(p[i], ud1, NAN)); // returns matrix 1x1
 		
 		double max_norm;
 		do {
@@ -573,16 +593,16 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 			matrix p_odb = p_s[0] + (p_s[0] - p[p_max]) * alpha; // p_odb = _p + a(_p - p_max)
 			
 			solution::f_calls++;
-			double p_odb_f = m2d(ff(p_odb, NAN, NAN)); // returns matrix 1x1
+			double p_odb_f = m2d(ff(p_odb, ud1, NAN)); // returns matrix 1x1
 			
 			if (m2d(p_odb_f) < p_f(p_max))
 			{
 				matrix p_e = p_s + (p_odb[0] - p_s[0]) * gamma;
 
 				solution::f_calls++;
-				double p_e_f = m2d(ff(p_e, NAN, NAN));
+				double p_e_f = m2d(ff(p_e, ud1, NAN));
 
-				if (ff(p_e, NAN, NAN) < p_odb_f)
+				if (ff(p_e, ud1, NAN) < p_odb_f)
 				{
 					p.set_col(p_e[0], p_max);
 					p_f(p_max) = p_e_f;
@@ -605,7 +625,7 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 					matrix p_z = p_s[0] + (p[p_max] - p_s[0])*beta;
 
 					solution::f_calls++;
-					double p_z_f = m2d(ff(p_z, NAN, NAN));
+					double p_z_f = m2d(ff(p_z, ud1, NAN));
 
 					if (p_z_f >= p_f(p_max))
 					{
@@ -614,7 +634,7 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 							if (i == p_min) continue;
 							p.set_col((p[i] + p[p_min]) * delta, i);
 							solution::f_calls++;
-							p_f(i) = m2d(ff(p[i], NAN, NAN));
+							p_f(i) = m2d(ff(p[i], ud1, NAN));
 						}
 					}
 					else
@@ -642,6 +662,7 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 		} while (max_norm > epsilon);
 		Xopt.x = p[g_min];
 		Xopt.y = p_f(g_min);
+//std::cout << "NM: " << Xopt << std::endl;
 		return Xopt;
 	}
 	catch (string ex_info)

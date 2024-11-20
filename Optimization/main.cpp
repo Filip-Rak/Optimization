@@ -369,14 +369,54 @@ void lab2()
 	rosen_file.close();
 }
 
+
+constexpr int k = 3;
+constexpr lbda const penalty_functions1[k] = { {g1}, {g2}, {g3} };
+
 void lab3()
 {
 	matrix test(2, 1);
-	test(0) = -0.5;
-	test(1) = 0.5;
+	test(0) = 4.0;
+	test(1) = 3.0;
 	std::cout << m2d(ff3T(test, NULL, NULL)) << std::endl;
-	solution k = sym_NM(ff3T, test, 1.0, 1.0, 0.5, 2.0, 0.5, 1e-2, 1000, NAN, NAN);
-	std::cout << k << std::endl;
+
+	double swf_c = 1.0;
+	double swf_dc = 0.5;
+
+	double szf_c = 0.5;
+	double szf_dc = 2.0;
+
+	double epsilon = 1e-5;
+	int Nmax = 1000;
+	//1.0, 1.0, 0.5, 2.0, 0.5, 1e-2
+	
+
+	//double s, double alpha, double beta, double gamma, double delta, double epsilon
+	matrix init_v_sym_NM = matrix(6, 1);
+
+	init_v_sym_NM(0) = 0.25; //double side_size = 0.5;
+	init_v_sym_NM(1) = 1.0; //double reflection_fator = 1.0;
+	init_v_sym_NM(2) = 0.5; //double narrowing_factor = 0.5;
+	init_v_sym_NM(3) = 2.0; //double expansion_factor = 2.0;
+	init_v_sym_NM(4) = 0.5; //double reduction_factor = 0.5;
+	init_v_sym_NM(5) = epsilon;
+	const int k = 3;
+	matrix value_a[3] = {matrix(1,1,4.0),matrix(1,1,4.4934),matrix(1,1,5)};
+
+	for (int i = 0; i < 3; i++) {
+		
+		solution k = pen(SWF<k,penalty_functions1,ff3T>, test, swf_c, swf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+		k.fit_fun(ff3T);
+		std::cout <<"END SOLUTION:\n" << k << std::endl;
+		solution::clear_calls();
+	}
+
+	for (int i = 0; i < 3; i++) {
+		solution k = pen(SZF<k, penalty_functions1, ff3T>, test, szf_c, szf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+		k.fit_fun(ff3T);
+		std::cout << "END SOLUTION:\n" << k << std::endl;
+		solution::clear_calls();
+	}
 }
 
 void lab4()
