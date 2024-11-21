@@ -425,6 +425,22 @@ void lab3()
 		std::cout << "END SOLUTION:\n" << k << std::endl;
 		solution::clear_calls();
 	}
+
+
+	// ----- Real Problem ----- //
+
+	std::cout << "// ----- Real Problem ----- //\n";
+	
+	// Starting conditions
+	double start_v = 5.0;	// [m/s]
+	double omega = 10.0;	// [rad/s]
+
+	matrix input(2, new double[2]{start_v, omega});
+
+	// Run simulation
+	matrix result = ff3R(input, NULL, NULL);
+
+	std::cout << "Score: " << result << "\n";
 }
 
 void lab4()

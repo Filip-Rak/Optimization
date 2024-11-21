@@ -200,3 +200,118 @@ matrix ff3T(matrix x, matrix ud1, matrix ud2) {
 	return sin(tk)/tk;
 	//return pow(x(0), 2) + pow(x(1), 2); // example from lecture
 }
+
+matrix df3(double t, matrix Y, matrix ud1, matrix ud2)
+{
+	// Parameters
+	const double m = 0.6;	// Mass [kg]
+	const double r = 0.12; // Radius [m]
+	const double g = 9.81; // Gravitational acceleration [m/s^2]
+	const double c = 0.47; // Air resistance coefficient 
+	const double rho = 1.2; // Air density [kg/m^3]
+	const double s = M_PI * pow(r, 2); // Cross-section area [m2]
+
+	// Movement vectors
+	double v_x = Y(1); // Horizontal speed
+	double v_y = Y(3); // Vertical speed
+	double v = sqrt(v_x * v_x + v_y * v_y); // Total speed
+
+	// Forces
+	double d_x = 0.5 * c * rho * s * v * v_x; // Horizontal resistance
+	double d_y = 0.5 * c * rho * s * v * v_y; // Vertical resistance
+	double m_x = rho * v_y * ud1(0) * 2 * M_PI * pow(r, 3); // Magnus's force horizontal
+	double m_y = rho * v_x * ud1(0) * 2 * M_PI * pow(r, 3); // Magnus's force vertical
+
+	// Differential euqations describing motion
+	matrix dY(4, 1);
+	dY(0) = v_x;						// dx / dt
+	dY(1) = -(d_x + m_x) / m;			// dvx / dt
+	dY(2) = v_y;						// d / dt
+	dY(3) = -(m * g + d_y + m_y) / m;	// dvy / dt
+
+	// Return the state
+	return dY;
+}
+
+matrix ff3R(matrix x, matrix ud1, matrix ud2)
+{
+	// Starting parameters
+	const double x_0 = 0;	// Starting horizontal position
+	const double vx_0 = x(0); // Starting horizontal speed
+	const double y_0 = 100;	// Starting vertical position
+	const double vy_0 = 0;	// Starting vertical speed
+	const double omega_0 = x(1); // Starting rotation
+	matrix Y_0(4, new double[4] {x_0, vx_0, y_0, vy_0});
+
+	// Time
+	const double start_time = 0.0;
+	const double end_time = 7.0;
+	const double time_step = 0.01;
+
+	// Resolve differential equation
+	matrix* result = solve_ode(df3, start_time, time_step, end_time, Y_0, omega_0, NULL);
+
+	// Find indecies of y = 0 and y = 50
+	int y_end_index = 0, y_50_index = 0;
+	for (int i = 0; i < get_len(result[0]); i++)
+	{
+		double current_y = result[1](i, 2);
+
+		// Check if current Y is closer to 50
+		double dist_to_50 = abs(current_y - 50);
+		double best_dist_to_50 = abs(result[1](y_50_index, 2) - 50);
+
+		if (dist_to_50 < best_dist_to_50) 
+			y_50_index = i;
+
+		// Check if current Y is closer to 0
+		double dist_to_0 = abs(current_y);
+		double best_dist_to_0 = abs(result[1](y_end_index, 2));
+		
+		if (dist_to_0 < best_dist_to_0)
+			y_end_index = i;
+	}
+
+	// Assign closest values
+	double x_end = result[1](y_end_index, 0);
+	double x_50 = result[1](y_50_index, 0);
+
+	// Debug result print
+	/*
+	for (int i = 0; i < get_len(result[0]); i++)
+	{
+		std::cout << "Step " << i
+			<< ", x: " << result[1](i, 0)
+			<< ", y: " << result[1](i, 2) << std::endl;
+	}
+	*/
+
+	std::cout << "X(0) = " << x_end << "\n";
+	std::cout << "X(50) = " << x_50 << "\n";
+
+	// Apply penalties
+	double penalty = 0.0;
+
+	// Penalty for exceeding starting speed
+	if (abs(vx_0) > 10)
+		penalty += ud2(0) * pow(abs(vx_0) - 10, 2);
+
+	// Penalty for exceeding starting rotation
+	if (abs(omega_0) > 15)
+		penalty += ud2(0) * pow(abs(omega_0) - 15, 2);
+
+	// Penalty for missing the target at y = 50
+	if (abs(x_50 - 5) > 0.5)
+		penalty += ud2(0) * pow(abs(x_50 - 5) - 0.5, 2);
+
+	// Give a final score
+	double score = -x_end + penalty;
+
+	// Clear dynamic memory
+	result[0].~matrix();
+	result[1].~matrix();
+
+	// Return the score
+	return score;
+}
+

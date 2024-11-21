@@ -76,6 +76,8 @@ matrix SWF(matrix x, matrix ud1, matrix ud2)
 	return (f(x, NAN, NAN) - sum * ud1(0));
 }
 
+matrix ff3T(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
 
+matrix df3(double t, matrix Y, matrix ud1, matrix ud2);
 
-matrix ff3T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff3R(matrix x, matrix ud1, matrix ud2);
