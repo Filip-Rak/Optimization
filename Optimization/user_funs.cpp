@@ -181,6 +181,7 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2)
 // Own Functions LAB3
 // ------------------
 
+// the boundary g functions
 matrix g1(matrix x, matrix ud1)
 {
 	return -x(0) + 1;

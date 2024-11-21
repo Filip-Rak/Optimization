@@ -371,24 +371,28 @@ void lab2()
 
 void lab3()
 {
-	constexpr g_fun g_set1[3] = { g1,g2,g3 };
-	matrix test(2, 1);
-	test(0) = 4;
-	test(1) = 4;
-	std::cout << m2d(ff3T(test, NULL, NULL)) << std::endl;
 
-	double swf_c = 5.0;
-	double swf_dc = 0.5;
+	// ---------- Table 1 and Table 2 ----------
 
-	double szf_c = 5.0;
-	double szf_dc = 2.0;
+	std::cout << "Solving for Table 1 and Table 2...";
 
+	// Init random number generator
+	srand(time(NULL));
+
+	// Range for defined local minimums
+	double x0_min = 1.0, x1_min = 1.0;  // Boundries for random number generation
+	
+	double sif_c = 5.0; // c size for internal 
+	double sif_dc = 0.5; // c -> 0
+
+	double sef_c = 5.0; // c size for external 
+	double sef_dc = 2.0; // c -> inf
+
+	// Common arguments
 	double epsilon = 1e-3;
 	int Nmax = 2000;
-	//1.0, 1.0, 0.5, 2.0, 0.5, 1e-2
-	
 
-	//double s, double alpha, double beta, double gamma, double delta, double epsilon
+	//initial values for sym_NM
 	matrix init_v_sym_NM = matrix(6, 1);
 
 	init_v_sym_NM(0) = 1.0; //double side_size = 0.5;
@@ -397,33 +401,44 @@ void lab3()
 	init_v_sym_NM(3) = 2.0; //double expansion_factor = 2.0;
 	init_v_sym_NM(4) = 0.5; //double reduction_factor = 0.5;
 	init_v_sym_NM(5) = epsilon;
+	const char delimiter = '\t';
+	const string OUTPUT_PATH = "Output/lab_3/";
+	ofstream tfun_file(OUTPUT_PATH + "out_1_tfun.txt");
+	if (!tfun_file.is_open())
+		return;
 
-	std::cout <<
-		m2d(sym_NM(ff3T, test, init_v_sym_NM(0), init_v_sym_NM(1),
-			init_v_sym_NM(2), init_v_sym_NM(3), init_v_sym_NM(4), init_v_sym_NM(5), Nmax).y) << std::endl;;
-
-
+	
 	const int k = 3;
 	matrix value_a[k] = {matrix(1,1,4.0),matrix(1,1,4.4934),matrix(1,1,5)};
-	std::cout << "#####################\n";
-	std::cout << "WEWNETRZNA\n";
+	
 	for (int i = 0; i < k; i++) {
-		std::cout << "------------------------\n";
-		std::cout << "a: " << value_a[i](0) << std::endl;;
-		solution k = pen(SWF<0, ff3T>, test, swf_c, swf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
-		k.fit_fun(ff3T);
-		std::cout <<"END SOLUTION:\n" << k << std::endl;
-		solution::clear_calls();
-	}
-	std::cout << "#####################\n";
-	std::cout << "ZEWNETRZNA\n";
-	for (int i = 0; i < k; i++) {
-		std::cout << "------------------------\n";
-		std::cout << "a: " << value_a[i](0) << std::endl;;
-		solution k = pen(SZF<0, ff3T>, test, szf_c, szf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
-		k.fit_fun(ff3T);
-		std::cout << "END SOLUTION:\n" << k << std::endl;
-		solution::clear_calls();
+		for (int o = 0; o < 100; o++) {
+			matrix x0(2, 1);
+			x0(0) = x0_min + static_cast<double>(rand()) / RAND_MAX * (m2d(value_a[i]) - x0_min);
+			x0(1) = x1_min + static_cast<double>(rand()) / RAND_MAX * (m2d(value_a[i]) - x1_min);
+			double r_init = sqrt(pow(x0(0), 2) + pow(x0(1), 2));
+			if (r_init > value_a[i])
+			{
+				if (x0(0) > x0(1))
+					x0(0) -= r_init - m2d(value_a[i]);
+				else
+					x0(1) -= r_init - m2d(value_a[i]);
+			}
+
+			tfun_file << x0(0) << delimiter << x0(1) << delimiter;
+			solution k = pen(SEF<0, ff3T >, x0, sef_c, sef_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+			k.fit_fun(ff3T);
+			tfun_file << k.x(0) << delimiter << k.x(1) << delimiter << sqrt(pow(k.x(0), 2) + pow(k.x(1), 2)) << delimiter;
+			tfun_file << m2d(k.y) << delimiter << solution::f_calls << delimiter;
+			solution::clear_calls();
+
+			k = pen(SIF<0, ff3T>, x0, sif_c, sif_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+			k.fit_fun(ff3T);
+			tfun_file << k.x(0) << delimiter << k.x(1) << delimiter << sqrt(pow(k.x(0), 2) + pow(k.x(1), 2)) << delimiter;
+			tfun_file << m2d(k.y) << delimiter << solution::f_calls << std::endl;
+			solution::clear_calls();
+
+		}
 	}
 
 

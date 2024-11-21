@@ -33,6 +33,7 @@ matrix ff2R(matrix x, matrix k1, matrix k2);
 
 // Own Functions LAB3
 // ------------------
+
 // @param matrix x - matrix 1x2 (vertical vector)
 matrix g1(matrix x, matrix = NAN);
 // @param matrix x - matrix 1x2 (vertical vector)
@@ -40,14 +41,25 @@ matrix g2(matrix x, matrix = NAN);
 // @param matrix x - matrix 1x2 (vertical vector)
 matrix g3(matrix x, matrix a);
 
-typedef matrix(*g_fun)(matrix, matrix);
 
+typedef matrix(*g_fun)(matrix, matrix);
 constexpr int n_sets = 2;
 constexpr int n_fun = 3;
-constexpr g_fun gl_g_tab[n_sets][n_fun] = { { nullptr,nullptr,g3,}, {nullptr,nullptr,nullptr} };
+/// @summary usage:
+/// @pre set number of sets (n_sets)
+///	@pre set number of functions in all steps (empty values must be set to nullptr!) 
+///	@pre specify g functions and order 
+///	@example 
+/// n_sets = 2;
+/// n_fun = 4;
+/// gl_g_tab[n_sets][n_fun] = { { g1, nullptr, g3, g2 }, { nullptr, g2, nullptr, nullptr } }
+constexpr g_fun gl_g_tab[n_sets][n_fun] = { { g1,g2,g3,}, {nullptr,nullptr,nullptr} };
 
+/// usage: SZF<number of the set of g functions inside gl_g_tab, function for calculating F>
+/// @param matrix x - point to calculate
+/// @param matrix c_and_other - vertical vector (n,1), n >= 1, c_and_other(0) must be equal to c
 template <int k, matrix(*f)(matrix, matrix, matrix) >
-matrix SZF(matrix x, matrix ud1, matrix ud2)
+matrix SEF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 {
 	if (k >= n_sets || k < 0)
 		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru!");
@@ -55,13 +67,16 @@ matrix SZF(matrix x, matrix ud1, matrix ud2)
 	for (int i = 0; i < n_fun; i++)
 	{
 		if (gl_g_tab[k][i] != nullptr)
-		sum += pow(max(0.0,m2d(gl_g_tab[k][i](x, ud1(1)))),2);
+		sum += pow(max(0.0,m2d(gl_g_tab[k][i](x, c_and_other(1)))),2);
 	}
-	return (f(x, NAN, NAN) + sum * ud1(0));
+	return (f(x, NAN, NAN) + sum * c_and_other(0));
 }
 
+/// usage: SWF<number of the set of g functions inside gl_g_tab, function for calculating F>
+/// @param matrix x - point to calculate
+/// @param matrix c_and_other - vertical vector (n,1), n >= 1, c_and_other(0) must be equal to c
 template <int k, matrix(*f)(matrix, matrix, matrix)>
-matrix SWF(matrix x, matrix ud1, matrix ud2)
+matrix SIF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 {
 	if (k >= n_sets || k < 0)
 		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru " + k);
@@ -69,11 +84,11 @@ matrix SWF(matrix x, matrix ud1, matrix ud2)
 	for (int i = 0; i < n_fun; i++)
 	{
 		if(gl_g_tab[k][i] != nullptr)
-		sum += 1.0 / m2d(gl_g_tab[k][i](x, ud1(1)));
+		sum += 1.0 / m2d(gl_g_tab[k][i](x, c_and_other(1)));
 	}
 
 //std::cout << "SWF: " << ud1(0) << " " << ud1(1) << std::endl;
-	return (f(x, NAN, NAN) - sum * ud1(0));
+	return (f(x, NAN, NAN) - sum * c_and_other(0));
 }
 
 matrix ff3T(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
