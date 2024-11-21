@@ -444,7 +444,7 @@ void lab3()
 
 	// ----- Real Problem ----- //
 
-	std::cout << "// ----- Real Problem ----- //\n";
+	std::cout << "\n// ----- Real Problem ----- //\n";
 	
 	// Starting conditions
 	double start_v = 5.0;	// [m/s]
