@@ -30,3 +30,52 @@ matrix ff2T(matrix, matrix = NAN, matrix = NAN);
 matrix df2(double t, matrix Y, matrix ud1, matrix ud2);
 
 matrix ff2R(matrix x, matrix k1, matrix k2);
+
+// Own Functions LAB3
+// ------------------
+// @param matrix x - matrix 1x2 (vertical vector)
+matrix g1(matrix x, matrix = NAN);
+// @param matrix x - matrix 1x2 (vertical vector)
+matrix g2(matrix x, matrix = NAN);
+// @param matrix x - matrix 1x2 (vertical vector)
+matrix g3(matrix x, matrix a);
+
+typedef matrix(*g_fun)(matrix, matrix);
+
+constexpr int n_sets = 2;
+constexpr int n_fun = 3;
+constexpr g_fun gl_g_tab[n_sets][n_fun] = { { nullptr,nullptr,g3,}, {nullptr,nullptr,nullptr} };
+
+template <int k, matrix(*f)(matrix, matrix, matrix) >
+matrix SZF(matrix x, matrix ud1, matrix ud2)
+{
+	if (k >= n_sets || k < 0)
+		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru!");
+	double sum = 0;
+	for (int i = 0; i < n_fun; i++)
+	{
+		if (gl_g_tab[k][i] != nullptr)
+		sum += pow(max(0.0,m2d(gl_g_tab[k][i](x, ud1(1)))),2);
+	}
+	return (f(x, NAN, NAN) + sum * ud1(0));
+}
+
+template <int k, matrix(*f)(matrix, matrix, matrix)>
+matrix SWF(matrix x, matrix ud1, matrix ud2)
+{
+	if (k >= n_sets || k < 0)
+		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru " + k);
+	double sum = 0;
+	for (int i = 0; i < n_fun; i++)
+	{
+		if(gl_g_tab[k][i] != nullptr)
+		sum += 1.0 / m2d(gl_g_tab[k][i](x, ud1(1)));
+	}
+
+//std::cout << "SWF: " << ud1(0) << " " << ud1(1) << std::endl;
+	return (f(x, NAN, NAN) - sum * ud1(0));
+}
+
+
+
+matrix ff3T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);

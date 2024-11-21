@@ -27,7 +27,8 @@ int main()
 	{
 		// lab0();
 		// lab1();
-		lab2();
+		// lab2();
+		lab3();
 	}
 	catch (string EX_INFO)
 	{
@@ -370,7 +371,60 @@ void lab2()
 
 void lab3()
 {
+	constexpr g_fun g_set1[3] = { g1,g2,g3 };
+	matrix test(2, 1);
+	test(0) = 4;
+	test(1) = 4;
+	std::cout << m2d(ff3T(test, NULL, NULL)) << std::endl;
 
+	double swf_c = 5.0;
+	double swf_dc = 0.5;
+
+	double szf_c = 5.0;
+	double szf_dc = 2.0;
+
+	double epsilon = 1e-3;
+	int Nmax = 2000;
+	//1.0, 1.0, 0.5, 2.0, 0.5, 1e-2
+	
+
+	//double s, double alpha, double beta, double gamma, double delta, double epsilon
+	matrix init_v_sym_NM = matrix(6, 1);
+
+	init_v_sym_NM(0) = 1.0; //double side_size = 0.5;
+	init_v_sym_NM(1) = 1.0; //double reflection_fator = 1.0;
+	init_v_sym_NM(2) = 0.5; //double narrowing_factor = 0.5;
+	init_v_sym_NM(3) = 2.0; //double expansion_factor = 2.0;
+	init_v_sym_NM(4) = 0.5; //double reduction_factor = 0.5;
+	init_v_sym_NM(5) = epsilon;
+
+	std::cout <<
+		m2d(sym_NM(ff3T, test, init_v_sym_NM(0), init_v_sym_NM(1),
+			init_v_sym_NM(2), init_v_sym_NM(3), init_v_sym_NM(4), init_v_sym_NM(5), Nmax).y) << std::endl;;
+
+
+	const int k = 3;
+	matrix value_a[k] = {matrix(1,1,4.0),matrix(1,1,4.4934),matrix(1,1,5)};
+	std::cout << "#####################\n";
+	std::cout << "WEWNETRZNA\n";
+	for (int i = 0; i < k; i++) {
+		std::cout << "------------------------\n";
+		std::cout << "a: " << value_a[i](0) << std::endl;;
+		solution k = pen(SWF<0, ff3T>, test, swf_c, swf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+		k.fit_fun(ff3T);
+		std::cout <<"END SOLUTION:\n" << k << std::endl;
+		solution::clear_calls();
+	}
+	std::cout << "#####################\n";
+	std::cout << "ZEWNETRZNA\n";
+	for (int i = 0; i < k; i++) {
+		std::cout << "------------------------\n";
+		std::cout << "a: " << value_a[i](0) << std::endl;;
+		solution k = pen(SZF<0, ff3T>, test, szf_c, szf_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+		k.fit_fun(ff3T);
+		std::cout << "END SOLUTION:\n" << k << std::endl;
+		solution::clear_calls();
+	}
 }
 
 void lab4()

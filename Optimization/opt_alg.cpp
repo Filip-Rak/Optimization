@@ -518,24 +518,153 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 solution pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try {
-		solution Xopt;
-		//Tu wpisz kod funkcji
+		solution xi(x0), x_i;
+		xi.flag = 0;
+		matrix init_v_S(2, 1);
+		init_v_S(0) = c;
+		init_v_S(1) = ud2(0);
+		double nm = 0;
+		double tmp1 = m2d(ff3T(xi.x)), tmp2;
+		do
+		{
+			x_i = xi;
+			tmp2 = tmp1;
+			xi = sym_NM(ff,xi.x,ud1(0),ud1(1),ud1(2),ud1(3), ud1(4), ud1(5), Nmax, init_v_S);
+			tmp1 = m2d(ff3T(xi.x));
+std::cout << "PEN:\nx:" << x_i.x(0) << " " << x_i.x(1) << " y: " << tmp2 << "\nx:" << xi.x(0) << " " << xi.x(1) << " y: " << tmp1 << "\n";
 
-		return Xopt;
+			if (solution::f_calls > Nmax)
+			{
+				xi.flag = -2;
+				break;
+			}
+			init_v_S(0) = c*dc;
+			nm = norm(xi.x - x_i.x);
+
+		} while (nm >= epsilon);
+		
+		return xi;
 	}
 	catch (string ex_info)
 	{
-		throw ("solution pen(...):\n" + ex_info);
+		throw ("matrix pen(...):\n" + ex_info);
 	}
 }
-
 solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alpha, double beta, double gamma, double delta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
 	{
+		
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		int g_min = 0;
+		Xopt.flag = 0;
+		// set function's dimension
+		const int DIM = 2;
+		// set initial matrixes
+		matrix p(DIM, 1 + DIM); // DIM (points' dimension) x DIM+1 (points' amount) square point matrix
+		matrix e = ident_mat(DIM); // DIM x DIM square identity matrix
+		
+		p.set_col(x0, 0); // p0 = x0
+		for (int i = 1; i <= DIM; i++)
+			p.set_col(p[0] + e[i-1] * s, i); //pi = p0 + ei*s
 
+		solution::f_calls += 1 + DIM;
+		matrix p_f(DIM+1, 1);
+		for (int i = 0; i <= DIM; i++)
+			p_f(i) = m2d(ff(p[i], ud1, NAN)); // returns matrix 1x1
+		
+		double max_norm;
+		do {
+			max_norm = 0.0;
+			int p_max = 0, p_min = 0;
+			for (int i = 1; i <= DIM; i++) {
+				if (p_f(p_max) < p_f(i)) p_max = i;
+				if (p_f(p_min) > p_f(i)) p_min = i;
+			}
+			if (p_max == p_min)
+				p_max = (p_max+1)%(DIM+1);
+
+			matrix p_s(DIM,1); // _p
+			for (int i = 0; i <= DIM; i++)
+			{
+				if (i == p_max) continue;
+				p_s.set_col(p_s[0] + p[i], 0); // _p = E(i!=max) pi
+			}
+
+			p_s.set_col(p_s[0] / DIM, 0);  // _p /= n
+			matrix p_odb = p_s[0] + (p_s[0] - p[p_max]) * alpha; // p_odb = _p + a(_p - p_max)
+			
+			solution::f_calls++;
+			double p_odb_f = m2d(ff(p_odb, ud1, NAN)); // returns matrix 1x1
+			
+			if (m2d(p_odb_f) < p_f(p_max))
+			{
+				matrix p_e = p_s + (p_odb[0] - p_s[0]) * gamma;
+
+				solution::f_calls++;
+				double p_e_f = m2d(ff(p_e, ud1, NAN));
+
+				if (ff(p_e, ud1, NAN) < p_odb_f)
+				{
+					p.set_col(p_e[0], p_max);
+					p_f(p_max) = p_e_f;
+				}
+				else
+				{
+					p.set_col(p_odb[0], p_max);
+					p_f(p_max) = p_odb_f;
+				}
+			}
+			else
+			{
+				if (p_f(p_min) <= p_odb_f && p_odb_f < p_f(p_max))
+				{
+					p.set_col(p_odb[0], p_max);
+					p_f(p_max) = p_odb(0);
+				}
+				else
+				{
+					matrix p_z = p_s[0] + (p[p_max] - p_s[0])*beta;
+
+					solution::f_calls++;
+					double p_z_f = m2d(ff(p_z, ud1, NAN));
+
+					if (p_z_f >= p_f(p_max))
+					{
+						for (int i = 0; i <= DIM; i++)
+						{
+							if (i == p_min) continue;
+							p.set_col((p[i] + p[p_min]) * delta, i);
+							solution::f_calls++;
+							p_f(i) = m2d(ff(p[i], ud1, NAN));
+						}
+					}
+					else
+					{
+						p.set_col(p_z[0], p_max);
+						p_f(p_max) = p_z_f;
+					}
+				}
+			}
+			g_min = p_min;
+			if (solution::f_calls > Nmax)
+			{
+				Xopt.flag = -2;
+				break;
+				//throw("Nie znaleziono przedzialu po Nmax probach (f_calls > Nmax)\n");
+			}
+			for (int i = 0; i <= DIM; i++)
+			{
+				if (i == p_min) continue;
+				double i_norm = norm(p[p_min] - p[i]);
+				if (i_norm > max_norm)
+					max_norm = i_norm;
+			}
+			//std::cout << max_norm << std::endl;
+		} while (max_norm >= epsilon);
+		Xopt.x = p[g_min];
+		Xopt.y = p_f(g_min);
+//std::cout << "NM: " << Xopt << std::endl;
 		return Xopt;
 	}
 	catch (string ex_info)
