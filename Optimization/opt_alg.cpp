@@ -531,7 +531,7 @@ solution pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc
 			tmp2 = tmp1;
 			xi = sym_NM(ff,xi.x,ud1(0),ud1(1),ud1(2),ud1(3), ud1(4), ud1(5), Nmax, init_v_S);
 			tmp1 = m2d(ff3T(xi.x));
-std::cout << "PEN:\nx:" << x_i.x(0) << " " << x_i.x(1) << " y: " << tmp2 << "\nx:" << xi.x(0) << " " << xi.x(1) << " y: " << tmp1 << "\n";
+//std::cout << "PEN:\nx:" << x_i.x(0) << " " << x_i.x(1) << " y: " << tmp2 << "\nx:" << xi.x(0) << " " << xi.x(1) << " y: " << tmp1 << "\n";
 
 			if (solution::f_calls > Nmax)
 			{
