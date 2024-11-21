@@ -178,6 +178,8 @@ matrix ff2R(matrix x, matrix ud1, matrix ud2)
 	// Return the result
 	return matrix(Q);
 }
+// Own Functions LAB3
+// ------------------
 
 matrix g1(matrix x, matrix ud1)
 {
@@ -191,10 +193,6 @@ matrix g3(matrix x, matrix a)
 {
 	return sqrt(pow(x(0), 2) + pow(x(1), 2)) - m2d(a);
 }
-
-
-// Own Functions LAB3
-// ------------------
 
 matrix ff3T(matrix x, matrix ud1, matrix ud2) {
 //std::cout << "FF3T" << std::endl;
