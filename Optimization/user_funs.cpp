@@ -277,42 +277,31 @@ matrix ff3R(matrix x, matrix ud1, matrix ud2)
 	double x_end = result[1](y_end_index, 0);
 	double x_50 = result[1](y_50_index, 0);
 
-	// Debug result print
-	/*
-	for (int i = 0; i < get_len(result[0]); i++)
-	{
-		std::cout << "Step " << i
-			<< ", x: " << result[1](i, 0)
-			<< ", y: " << result[1](i, 2) << std::endl;
-	}
-	*/
-
-	std::cout << "X(0) = " << x_end << "\n";
-	std::cout << "X(50) = " << x_50 << "\n";
-
 	// Apply penalties
-	double penalty = 0.0;
+	const double scaling_factor = 600000;
+	double total_penalty = 0.0;
 
 	// Penalty for exceeding starting speed
 	if (abs(vx_0) > 10)
-		penalty += ud2(0) * pow(abs(vx_0) - 10, 2);
+		total_penalty += scaling_factor * pow(abs(vx_0) - 10, 2);
 
 	// Penalty for exceeding starting rotation
 	if (abs(omega_0) > 15)
-		penalty += ud2(0) * pow(abs(omega_0) - 15, 2);
+		total_penalty += scaling_factor * pow(abs(omega_0) - 15, 2);
 
 	// Penalty for missing the target at y = 50
-	if (abs(x_50 - 5) > 0.5)
-		penalty += ud2(0) * pow(abs(x_50 - 5) - 0.5, 2);
+	if (x_50 < 4.5)
+		total_penalty += pow(4.5 - x_50, 2) * scaling_factor;
+	else if (x_50 > 5.5)
+		total_penalty += pow(x_50 - 5.5, 2) * scaling_factor;
 
 	// Give a final score
-	double score = -x_end + penalty;
+	double score = -x_end + total_penalty;
 
-	// Clear dynamic memory
+	// Free dynamic memory
 	result[0].~matrix();
 	result[1].~matrix();
 
 	// Return the score
 	return score;
 }
-

@@ -443,19 +443,66 @@ void lab3()
 
 
 	// ----- Real Problem ----- //
-
-	std::cout << "\n// ----- Real Problem ----- //\n";
+	std::cout << "\nSolving for real problem...";
 	
-	// Starting conditions
-	double start_v = 5.0;	// [m/s]
+	// Files
+	std::ofstream opt_file(OUTPUT_PATH + "out_2_1_opt.txt");
+	std::ofstream sim_file(OUTPUT_PATH + "out_2_2_sim.txt");
+
+	// ----- Tab 3 -----
+
+	// Starting conditions 
+	double start_velocity = 5.0;	// [m/s]
 	double omega = 10.0;	// [rad/s]
+	matrix x0(2, new double[2]{start_velocity, omega});
 
-	matrix input(2, new double[2]{start_v, omega});
+	// Optimization
+	double penalty_start = 100.0;
+	double penalty_adjustment = 0.1;
+	double penalty_multiplier = 1e7;
+	solution opt_res = pen(ff3R, x0, penalty_start, penalty_adjustment, epsilon, Nmax, init_v_sym_NM, penalty_multiplier);
 
-	// Run simulation
-	matrix result = ff3R(input, NULL, NULL);
+	// Save to file
+	opt_file << opt_res << "\n";
 
-	std::cout << "Score: " << result << "\n";
+	// ----- Simulation -----
+
+	// Save optimized parameters
+	double opt_velocity = opt_res.x(0);
+	double opt_rotation = opt_res.x(1);
+
+	// Starting parameters
+	const double x_0 = 0;	// Starting horizontal position
+	const double vx_0 = opt_res.x(0); // Starting horizontal speed
+	const double y_0 = 100;	// Starting vertical position
+	const double vy_0 = 0;	// Starting vertical speed
+	const double omega_0 = opt_res.x(1); // Starting rotation
+	matrix Y_0(4, new double[4] {x_0, vx_0, y_0, vy_0});
+
+	// Time
+	const double start_time = 0.0;
+	const double end_time = 7.0;
+	const double time_step = 0.01;
+
+	// Resolve differential equation
+	matrix* result = solve_ode(df3, start_time, time_step, end_time, Y_0, omega_0, NULL);
+
+	// Save the result
+	for (int i = 0; i < get_len(result[0]); ++i)
+	{
+		double t_i = result[0](i, 0);
+		double X_i = result[1](i, 0);
+		double Y_i = result[1](i, 2);
+
+		sim_file << t_i << "\t" << X_i << "\t" << Y_i << "\n";
+	}
+
+	// Close the files
+	opt_file.close();
+	sim_file.close();
+
+	// End debug with new line
+	std::cout << "\n";
 }
 
 void lab4()
