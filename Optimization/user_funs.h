@@ -84,9 +84,8 @@ matrix SIF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 	for (int i = 0; i < n_fun; i++)
 	{
 		if(gl_g_tab[k][i] != nullptr)
-		sum += 1.0 / m2d(gl_g_tab[k][i](x, c_and_other(1)));
+		sum += 1.0l / m2d(gl_g_tab[k][i](x, c_and_other(1)));
 	}
-
 //std::cout << "SWF: " << ud1(0) << " " << ud1(1) << std::endl;
 	return (f(x, NAN, NAN) - sum * c_and_other(0));
 }

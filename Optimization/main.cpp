@@ -382,15 +382,15 @@ void lab3()
 	// Range for defined local minimums
 	double x0_min = 1.0, x1_min = 1.0;  // Boundries for random number generation
 	
-	double sif_c = 5.0; // c size for internal 
-	double sif_dc = 0.5; // c -> 0
+	double sif_c = 2.0; // c size for internal 
+	double sif_dc = 0.7; // c -> 0
 
 	double sef_c = 5.0; // c size for external 
 	double sef_dc = 2.0; // c -> inf
 
 	// Common arguments
 	double epsilon = 1e-3;
-	int Nmax = 2000;
+	int Nmax = 1000;
 
 	//initial values for sym_NM
 	matrix init_v_sym_NM = matrix(6, 1);
@@ -419,10 +419,8 @@ void lab3()
 			double r_init = sqrt(pow(x0(0), 2) + pow(x0(1), 2));
 			if (r_init > value_a[i])
 			{
-				if (x0(0) > x0(1))
-					x0(0) -= r_init - m2d(value_a[i]);
-				else
-					x0(1) -= r_init - m2d(value_a[i]);
+				o--;
+				continue;
 			}
 
 			tfun_file << x0(0) << delimiter << x0(1) << delimiter;
@@ -436,11 +434,13 @@ void lab3()
 			k.fit_fun(ff3T);
 			tfun_file << k.x(0) << delimiter << k.x(1) << delimiter << sqrt(pow(k.x(0), 2) + pow(k.x(1), 2)) << delimiter;
 			tfun_file << m2d(k.y) << delimiter << solution::f_calls << std::endl;
+
+			if (k.flag == -2) std::cout << "-2!\n" << k.x(0) << " " << k.x(1) << "\n";
 			solution::clear_calls();
 
 		}
 	}
-
+	return;
 
 	// ----- Real Problem ----- //
 	std::cout << "\nSolving for real problem...";
