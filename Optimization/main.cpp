@@ -382,8 +382,8 @@ void lab3()
 	// Range for defined local minimums
 	double x0_min = 1.0, x1_min = 1.0;  // Boundries for random number generation
 	
-	double sif_c = 2.0; // c size for internal 
-	double sif_dc = 0.7; // c -> 0
+	double sif_c = 0.05; // c size for internal 
+	double sif_dc = 0.5; // c -> 0
 
 	double sef_c = 5.0; // c size for external 
 	double sef_dc = 2.0; // c -> inf
@@ -407,7 +407,6 @@ void lab3()
 	if (!tfun_file.is_open())
 		return;
 
-	
 	const int k = 3;
 	matrix value_a[k] = {matrix(1,1,4.0),matrix(1,1,4.4934),matrix(1,1,5)};
 	
@@ -424,13 +423,13 @@ void lab3()
 			}
 
 			tfun_file << x0(0) << delimiter << x0(1) << delimiter;
-			solution k = pen(SEF<0, ff3T >, x0, sef_c, sef_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+			solution k = pen(SEF<0, ff3T>, x0, sef_c, sef_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
 			k.fit_fun(ff3T);
 			tfun_file << k.x(0) << delimiter << k.x(1) << delimiter << sqrt(pow(k.x(0), 2) + pow(k.x(1), 2)) << delimiter;
 			tfun_file << m2d(k.y) << delimiter << solution::f_calls << delimiter;
 			solution::clear_calls();
 
-			k = pen(SIF<0, ff3T>, x0, sif_c, sif_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
+			k = pen(SIF<1,ff3T>, x0, sif_c, sif_dc, epsilon, Nmax, init_v_sym_NM, value_a[i]);
 			k.fit_fun(ff3T);
 			tfun_file << k.x(0) << delimiter << k.x(1) << delimiter << sqrt(pow(k.x(0), 2) + pow(k.x(1), 2)) << delimiter;
 			tfun_file << m2d(k.y) << delimiter << solution::f_calls << std::endl;

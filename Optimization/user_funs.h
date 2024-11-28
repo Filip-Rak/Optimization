@@ -53,7 +53,7 @@ constexpr int n_fun = 3;
 /// n_sets = 2;
 /// n_fun = 4;
 /// gl_g_tab[n_sets][n_fun] = { { g1, nullptr, g3, g2 }, { nullptr, g2, nullptr, nullptr } }
-constexpr g_fun gl_g_tab[n_sets][n_fun] = { { g1,g2,g3,}, {nullptr,nullptr,nullptr} };
+constexpr g_fun gl_g_tab[n_sets][n_fun] = { { g1,g2,g3,}, {g3,g2,g1} };
 
 /// usage: SZF<number of the set of g functions inside gl_g_tab, function for calculating F>
 /// @param matrix x - point to calculate
@@ -62,15 +62,18 @@ template <int k, matrix(*f)(matrix, matrix, matrix) >
 matrix SEF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 {
 	if (k >= n_sets || k < 0)
-		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru!");
+		throw("matrix SEF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru" + k);
 	double sum = 0;
 	for (int i = 0; i < n_fun; i++)
 	{
 		if (gl_g_tab[k][i] != nullptr)
 		sum += pow(max(0.0,m2d(gl_g_tab[k][i](x, c_and_other(1)))),2);
 	}
+	//std::cout << "SEF: " << (f(x, NAN, NAN) + sum * c_and_other(0)) << endl;
 	return (f(x, NAN, NAN) + sum * c_and_other(0));
 }
+
+static double max_value = 0.0;
 
 /// usage: SWF<number of the set of g functions inside gl_g_tab, function for calculating F>
 /// @param matrix x - point to calculate
@@ -79,14 +82,15 @@ template <int k, matrix(*f)(matrix, matrix, matrix)>
 matrix SIF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 {
 	if (k >= n_sets || k < 0)
-		throw("matrix SZF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru " + k);
+		throw("matrix SIF(matrix x, matrix ud1, matrix ud2): nie ma takiego zbioru " + k);
 	double sum = 0;
 	for (int i = 0; i < n_fun; i++)
 	{
 		if(gl_g_tab[k][i] != nullptr)
-		sum += 1.0l / m2d(gl_g_tab[k][i](x, c_and_other(1)));
+		sum += 1.0/fabs(m2d(gl_g_tab[k][i](x, c_and_other(1))));
 	}
-//std::cout << "SWF: " << ud1(0) << " " << ud1(1) << std::endl;
+	//std::cout << "SIF: " << sum * c_and_other(0) << endl;
+	
 	return (f(x, NAN, NAN) - sum * c_and_other(0));
 }
 
