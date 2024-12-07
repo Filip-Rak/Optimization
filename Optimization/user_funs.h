@@ -94,8 +94,18 @@ matrix SIF(matrix x, matrix c_and_other, matrix ud1 = NAN)
 	return (f(x, NAN, NAN) - sum * c_and_other(0));
 }
 
-matrix ff3T(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
+matrix ff3T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix df3(double t, matrix Y, matrix ud1, matrix ud2);
 
 matrix ff3R(matrix x, matrix ud1, matrix ud2);
+
+// Own Functions LAB4
+// ------------------
+double norm_no_sqrt(const matrix& x);
+
+matrix ff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix gradff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix Hff4T(matrix x, matrix ud1, matrix ud2);

@@ -559,6 +559,7 @@ solution pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc
 		throw ("matrix pen(...):\n" + ex_info);
 	}
 }
+
 solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double alpha, double beta, double gamma, double delta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
@@ -686,10 +687,47 @@ solution SD(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 {
 	try
 	{
-		solution Xopt;
-		//Tu wpisz kod funkcji
+		solution xi(x0), x_i;
+		xi.flag = 0;
+		bool h0_c = false;
+		if (h0 == 0.0)
+			h0_c = true;
+		int i = 0;
+		bool save_prev_x = !isnan(ud1(0));
+		
+		do
+		{
+			matrix di = -gf(xi.x, NAN, NAN);
+			++solution::g_calls;
+			if (h0_c) {
+				double* range = expansion(ff, 0, 10.0, 2.0, Nmax, xi.x, di);
+				h0 = m2d(golden(ff, 0, range[1], epsilon, Nmax, xi.x, di).x);
+				delete[] range;
+			}
 
-		return Xopt;
+			x_i = xi;
+			if (save_prev_x)
+			{
+				if (!i) {
+					xi.ud = matrix(x_i.x);
+					i++;
+				}
+				else {
+					xi.ud.add_col(x_i.x);
+				}
+			}
+			xi.x = xi.x + di * h0;
+			
+			xi.fit_fun(ff,NAN,NAN);
+
+			if (solution::f_calls > Nmax) {
+				xi.flag = -2;
+				break;
+			}
+			
+		} while (norm(xi.x - x_i.x) >= epsilon);
+
+		return xi;
 	}
 	catch (string ex_info)
 	{
@@ -701,10 +739,72 @@ solution CG(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 {
 	try
 	{
-		solution Xopt;
-		//Tu wpisz kod funkcji
+		solution xi(x0), x_i;
+		xi.flag = 0;
+		bool h0_c = false;
+		if (h0 == 0.0)
+			h0_c = true;
+		bool save_prev_x = !isnan(ud1(0));
+		int i = 0;
+		int k = 0;
+		matrix di;
+		double x_i_g_pow_norm =0.0;
+		do
+		{
+			xi.grad(gf, NAN, NAN);
+			double xi_g_pow_norm = pow(norm(xi.g), 2);
+			
+			if (i != 0) {
 
-		return Xopt;
+				double beta = xi_g_pow_norm / x_i_g_pow_norm;
+				if (x_i.y < xi.y)
+				{
+					//std::cout << "i: " << i << " " << x0 << std::endl;
+					di = -x_i.g;
+				}
+				else 
+				di = -xi.g + di * beta;
+			}
+			else {
+				di = -xi.g;
+				
+			}
+			i++;
+			
+			x_i_g_pow_norm = xi_g_pow_norm;
+			
+			if (h0_c) {
+				double* range = expansion(ff, 0, 10.0, 2.0, Nmax, xi.x, di);
+				h0 = m2d(golden(ff, max(range[0],0.0), range[1], epsilon, Nmax, xi.x, di).x);
+				delete[] range;
+			}
+			
+			x_i.x = xi.x;
+			x_i.y = xi.y;
+			x_i.g = xi.g;
+			if (save_prev_x)
+			{
+				if (!k) {
+					xi.ud = matrix(x_i.x);
+					k++;
+				}
+				else {
+					xi.ud.add_col(x_i.x);
+				}
+			}
+
+			xi.x = xi.x + di * h0;
+			xi.fit_fun(ff, NAN, NAN);
+			
+
+			if (solution::f_calls > Nmax) {
+				xi.flag = -2;
+				break;
+			}
+
+		} while (norm(xi.x - x_i.x) >= epsilon);
+
+		return xi;
 	}
 	catch (string ex_info)
 	{
@@ -717,10 +817,58 @@ solution Newton(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix,
 {
 	try
 	{
-		solution Xopt;
-		//Tu wpisz kod funkcji
+		solution xi(x0), x_i;
+		xi.flag = 0;
+		bool h0_c = false;
+		if (h0 == 0.0) 
+			h0_c = true;
+		bool save_prev_x = !isnan(ud1(0));
+		int i = 0;
+		do
+		{
+			xi.hess(Hf, NAN, NAN);
+			xi.grad(gf, NAN, NAN);
+			
+			matrix di = -inv(xi.H)*xi.g;
 
-		return Xopt;
+			if (h0_c) {
+				double* range = expansion(ff, 0, 10.0, 2.0, Nmax, xi.x, di);
+				h0 = m2d(golden(ff, max(range[0], 0.0), range[1], epsilon, Nmax, xi.x, di).x);
+				delete[] range;
+			}
+
+			if (solution::f_calls > Nmax)
+			{
+				xi.flag = -2;
+				break;
+			}
+
+			x_i = xi;
+			if (save_prev_x)
+			{
+				if (!i) {
+					xi.ud = matrix(xi.x);
+					
+					i++;
+				}
+				else {
+					xi.ud.add_col(xi.x);
+				}
+			}
+
+			xi.x = xi.x + di * h0;
+
+			xi.fit_fun(ff, NAN, NAN);
+
+			solution::f_calls++;
+			if (solution::f_calls > Nmax) {
+				xi.flag = -2;
+				break;
+			}
+
+		} while (norm(xi.x - x_i.x) >= epsilon);
+
+		return xi;
 	}
 	catch (string ex_info)
 	{
@@ -733,8 +881,44 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 	try
 	{
 		solution Xopt;
+		Xopt.flag = 0;
 		//Tu wpisz kod funkcji
-
+		static const double alpha = (sqrt(5.0) - 1.0) * .5;
+		double ai = a, bi = b;
+		double ay = m2d(ff(a, ud1, ud2)), by = m2d(ff(b, ud1, ud2));
+		solution::f_calls+= 2;
+		double ci  = (bi - alpha * (bi - ai)), di = (ai + alpha * (bi - ai));
+		double cy = m2d(ff(ci, ud1, ud2)), dy = m2d(ff(di, ud1, ud2));
+		solution::f_calls += 2;
+		do
+		{
+			if (cy < dy)
+			{
+				bi = di;
+				by = dy;
+				di = ci;
+				dy = cy;
+				ci = bi - alpha * (bi - ai);
+				cy = m2d(ff(ci, ud1, ud2));
+				solution::f_calls++;
+			}
+			else
+			{
+				ai = ci;
+				ay = cy;
+				ci = di;
+				cy = dy;
+				di = ai + alpha * (bi - ai);
+				dy = m2d(ff(di, ud1, ud2));
+				solution::f_calls++;
+			}
+			if (solution::f_calls > Nmax)
+			{
+				Xopt.flag = -2;
+				break;
+			}
+		} while (bi-ai >= epsilon);
+		Xopt.x = matrix((ai + bi) / 2.0);
 		return Xopt;
 	}
 	catch (string ex_info)

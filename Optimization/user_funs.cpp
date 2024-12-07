@@ -305,3 +305,54 @@ matrix ff3R(matrix x, matrix ud1, matrix ud2)
 	// Return the score
 	return score;
 }
+
+// Own Functions LAB4
+// ------------------
+
+double norm_no_sqrt(const matrix& x)
+{
+	int* nA = get_size(x);
+	if (nA[1] != 1) {
+		freeIntTab2D(nA);
+		throw string("double norm_no_sqrt(const matrix&):\nnorma jest zdefiniowana tylko dla wektorow pionowych");
+	}
+	double N = 0.0;
+	for (int i = 0; i < nA[0]; ++i)
+		N += pow(x(i), 2);
+	if (isnan(N))
+		std::cout << x(0) << " " << x(1) << std::endl;
+	
+	freeIntTab2D(nA);
+	
+	return N;
+}
+
+matrix ff4T(matrix x, matrix ud1, matrix ud2)
+{
+	if (get_len(x) == 2)
+		return (pow(x(0) + 2.0 * x(1) - 7.0) + pow(2.0 * x(0) + x(1) - 5.0));
+	else 
+		return (pow((ud1(0) + x(0) * ud2(0)) + 2.0 * (ud1(1) + x(0) * ud2(1)) - 7.0)
+			+ pow(2.0 * (ud1(0) + x(0) * ud2(0)) + (ud1(1) + x(0) * ud2(1)) - 5.0));
+	
+}
+
+matrix gradff4T(matrix x, matrix ud1, matrix ud2)
+{
+
+	return matrix(2, new double[2] {
+			10.0 * x(0) + 8.0 * x(1) - 34,
+			8.0 * x(0) + 10.0 * x(1) - 38,
+		});
+}
+
+matrix Hff4T(matrix x, matrix ud1, matrix ud2)
+{
+	matrix rt(2, 2);
+	rt(0, 0) = 10.0;
+	rt(0, 1) = 8.0;
+	rt(1, 0) = 8.0;
+	rt(1, 1) = 10;
+
+	return rt;
+}

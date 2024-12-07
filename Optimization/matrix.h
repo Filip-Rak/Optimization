@@ -36,7 +36,8 @@ public:
 	void add_col(const matrix&); // throw (string);
 	void add_row(const matrix&); // throw (string);
 };
-
+int* get_size(const matrix&);
+int get_len(const matrix&);
 matrix operator+(const matrix&, const matrix&); // throw (string);
 matrix operator-(const matrix&, const matrix&); // throw (string);
 matrix operator*(const matrix&, const matrix&); // throw (string);

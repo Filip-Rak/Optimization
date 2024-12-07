@@ -28,7 +28,8 @@ int main()
 		// lab0();
 		// lab1();
 		// lab2();
-		lab3();
+		// lab3();
+		lab4();
 	}
 	catch (string EX_INFO)
 	{
@@ -506,7 +507,151 @@ void lab3()
 
 void lab4()
 {
+	// Common arguments
+	double epsilon = 1e-3;
+	int Nmax = 1000;
 
+	// File output 
+	const char delimiter = '\t';
+	const string OUTPUT_PATH = "Output/lab_4/";
+
+	// ---------- Table 1 and Table 2 ----------
+
+	std::cout << "Solving for Table 1 and Table 2...\n";
+
+	// Open file to save test values
+	ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
+	if (!tfun_file1.good()) return;
+
+	// Init random number generator
+	srand(time(NULL));
+
+	// Range for testing on both axis
+	double max_values[2]{ 10.0, 10.0 };
+	double min_values[2]{ -10.0, -10.0 };
+
+	// Set step size for testing
+	double steps[3]{ .05, .12, .0 };
+	{
+		// Test 100 random points with defined number of steps
+		for (int step_i = 0; step_i < 3; step_i++)
+		{
+			for (int i = 0; i < 100; i++)
+			{
+				matrix test = matrix(2, new double[2] {
+					min_values[0] + static_cast<double>(rand()) / RAND_MAX * (max_values[0] - min_values[0]),
+						min_values[1] + static_cast<double>(rand()) / RAND_MAX * (max_values[1] - min_values[1])
+					});
+				tfun_file1 << test(0) << delimiter << test(1) << delimiter;
+
+				// Steepest descent metohod -> step size determines the convergence of the function
+				solution SSD = SD(ff4T, gradff4T, test, steps[step_i], epsilon, Nmax, NAN, NAN);
+				SSD.fit_fun(ff4T, NAN, NAN);
+				tfun_file1 << SSD.x(0) << delimiter << SSD.x(1) << delimiter << SSD.y(0) << delimiter;
+				tfun_file1 << SSD.f_calls << delimiter << SSD.g_calls << delimiter;
+				solution::clear_calls();
+
+				// Conjugate gradient method -> guarantee of convergence, no need to calculate the Hessian matrix
+				solution SCG = CG(ff4T, gradff4T, test, steps[step_i], epsilon, Nmax, NAN, NAN);
+				SCG.fit_fun(ff4T, NAN, NAN);
+				tfun_file1 << SCG.x(0) << delimiter << SCG.x(1) << delimiter << SCG.y(0) << delimiter;
+				tfun_file1 << SCG.f_calls << delimiter << SCG.g_calls << delimiter;
+				solution::clear_calls();
+
+				// Newton's method -> guarantee of convergence, the Hessian matrix must be provided as additional Hf function.
+				solution SNewton = Newton(ff4T, gradff4T, Hff4T, test, steps[step_i], epsilon, Nmax, NAN, NAN);
+				SNewton.fit_fun(ff4T, NAN, NAN);
+				tfun_file1 << SNewton.x(0) << delimiter << SNewton.x(1) << delimiter << SNewton.y(0) << delimiter;
+				tfun_file1 << SNewton.f_calls << delimiter << SNewton.g_calls << delimiter << SNewton.H_calls << delimiter;
+				solution::clear_calls();
+
+				tfun_file1 << std::endl;
+			}
+		}
+		tfun_file1.close();
+	}
+	try{
+		matrix test_x = matrix(2, new double[2] {
+			min_values[0] + static_cast<double>(rand()) / RAND_MAX * (max_values[0] - min_values[0]),
+			min_values[1] + static_cast<double>(rand()) / RAND_MAX * (max_values[1] - min_values[1])
+		});
+		
+		try {
+			ofstream SD_tfun(OUTPUT_PATH + "out_SD_tfun.txt");
+			if (!SD_tfun.good())  throw("FILE NO GOOD");
+			for (int step_i = 0; step_i < 3; step_i++)
+			{
+				solution SSD = SD(ff4T, gradff4T, test_x, steps[step_i], epsilon, Nmax, 0, NAN);
+				int* size_sd = get_size(SSD.ud);
+				for (int i = 0; i < size_sd[1]; i++)
+				{
+					SD_tfun << SSD.ud(0, i) << delimiter << SSD.ud(1, i) << std::endl;
+				}
+				SD_tfun << SSD.x(0) << delimiter << SSD.x(1) << std::endl;
+				SD_tfun << std::endl;
+				delete[] size_sd;
+				solution::clear_calls();
+			}
+			SD_tfun.close();
+		} 
+		catch (string ex_info)
+		{
+			throw ("SD_tfun:\n" + ex_info);
+		}
+
+		try {
+			ofstream CG_tfun(OUTPUT_PATH + "out_CG_tfun.txt");
+			if (!CG_tfun.good()) throw("FILE NO GOOD");
+			for (int step_i = 0; step_i < 3; step_i++)
+			{
+				solution SCG = CG(ff4T, gradff4T, test_x, steps[step_i], epsilon, Nmax, 0, NAN);
+				int* size_sd = get_size(SCG.ud);
+				for (int i = 0; i < size_sd[1]; i++)
+				{
+					CG_tfun << SCG.ud(0, i) << delimiter << SCG.ud(1, i) << std::endl;
+				}
+				CG_tfun << SCG.x(0) << delimiter << SCG.x(1) << std::endl;
+				CG_tfun << std::endl;
+				delete[] size_sd;
+				solution::clear_calls();
+			}
+			CG_tfun.close();
+		}
+		catch (string ex_info)
+		{
+			throw ("CG_tfun:\n" + ex_info);
+		}
+
+		try {
+			ofstream Newton_tfun(OUTPUT_PATH + "out_Newton_tfun.txt");
+			if (!Newton_tfun.good()) throw("FILE NO GOOD");
+			for (int step_i = 0; step_i < 3; step_i++)
+			{
+				solution SNewton = Newton(ff4T, gradff4T, Hff4T, test_x, steps[step_i], epsilon, Nmax, 0, NAN);
+				int* size_sd = get_size(SNewton.ud);
+				for (int i = 0; i < size_sd[1]; i++)
+				{
+					Newton_tfun << SNewton.ud(0, i) << delimiter << SNewton.ud(1, i) << std::endl;
+				}
+				
+				Newton_tfun << SNewton.x(0) << delimiter << SNewton.x(1) << std::endl;
+				Newton_tfun << std::endl;
+				delete[] size_sd;
+				solution::clear_calls();
+			}
+			Newton_tfun.close();
+		}
+		catch (string ex_info)
+		{
+			throw ("Newton_tfun:\n" + ex_info);
+		}
+
+	}
+	catch (string ex_info)
+	{
+		throw ("Graph values:\n" + ex_info);
+	}
+	
 }
 
 void lab5()
