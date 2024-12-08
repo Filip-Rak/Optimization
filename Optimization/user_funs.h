@@ -112,6 +112,8 @@ matrix Hff4T(matrix x, matrix ud1, matrix ud2);
 
 double sigmoid(double z);
 
+double get_h_l4(matrix theta, matrix X, int col);
+
 matrix get_cost(matrix X, matrix Y, matrix theta);
 
 matrix get_gradient(matrix X, matrix Y, matrix theta);

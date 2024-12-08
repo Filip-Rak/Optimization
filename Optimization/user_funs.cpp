@@ -362,6 +362,15 @@ double sigmoid(double z)
 	return 1.0 / (1.0 + exp(-z));
 }
 
+double get_h_l4(matrix theta, matrix X, int col)
+{
+	// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
+	double z = theta(0, 0) * X(0, col) + theta(1, 0) * X(1, col) + theta(2, 0) * X(2, col);
+	double h = sigmoid(z);
+
+	return h;
+}
+
 matrix get_cost(matrix theta, matrix Y, matrix X) 
 {
 	// Get size
@@ -373,9 +382,7 @@ matrix get_cost(matrix theta, matrix Y, matrix X)
 
 	for (int j = 0; j < m; ++j) 
 	{
-		// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
-		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
-		double h = sigmoid(z);
+		double h = get_h_l4(theta, X, j);
 
 		// Add to the cost
 		if (Y(0, j) == 1) 
@@ -408,9 +415,7 @@ matrix get_gradient(matrix theta, matrix Y, matrix X)
 
 	for (int j = 0; j < m; ++j) 
 	{
-		// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
-		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
-		double h = sigmoid(z);
+		double h = get_h_l4(theta, X, j);
 
 		// Get the error
 		double error = h - Y(0, j);
@@ -435,8 +440,7 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
 	int guessed = 0;
 	for (int j = 0; j < cols; j++)
 	{
-		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
-		double h = sigmoid(z);
+		double h = get_h_l4(theta, X, j);
 
 		int prediction = (h >= 0.5) ? 1 : 0;
 		if (prediction == Y(0, j)) 

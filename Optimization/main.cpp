@@ -683,12 +683,13 @@ void lab4()
 	// std::cout << "Gradient:\n" << get_gradient(x_matrix, y_matrix, theta) << "\n";
 
 	// Solve for various step lengths
+	int real_n_max = 1e6;
 	double step_length[] = { 0.01, 0.001, 0.0001 };
 	int iterations = sizeof(step_length) / sizeof(double);
 
 	// File reference for data output
 	ofstream output_file;
-	int real_n_max = 1e6;
+	// std::string delimiter = "\n";
 
 	for (int i = 0; i < iterations; i++)
 	{
@@ -702,7 +703,14 @@ void lab4()
 
 		// Output the solution to file
 		output_file << opt_sol << "\n";
-		output_file << "Accuracy: " << get_accuracy(opt_sol.x, x_matrix, y_matrix, cols);
+		output_file << "Accuracy: " << get_accuracy(opt_sol.x, x_matrix, y_matrix, cols) << "\n";
+
+		for (int j = 0; j < cols; j++)
+		{
+			output_file << x_matrix(1, j) << delimiter << x_matrix(2, j) << delimiter
+				<< y_matrix(0, j) << delimiter << get_h_l4(opt_sol.x, x_matrix, j) << "\n";
+		}
+
 
 		// Close output file
 		output_file.close();
