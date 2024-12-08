@@ -329,7 +329,7 @@ double norm_no_sqrt(const matrix& x)
 
 matrix ff4T(matrix x, matrix ud1, matrix ud2)
 {
-	if (!isnan(ud2(0)))
+	if (isnan(ud2(0)))
 		return (pow(x(0) + 2.0 * x(1) - 7.0) + pow(2.0 * x(0) + x(1) - 5.0));
 	else 
 		return (pow((ud1(0) + x(0) * ud2(0)) + 2.0 * (ud1(1) + x(0) * ud2(1)) - 7.0)
