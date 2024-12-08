@@ -362,7 +362,7 @@ double sigmoid(double z)
 	return 1.0 / (1.0 + exp(-z));
 }
 
-matrix get_cost(matrix X, matrix Y, matrix theta) 
+matrix get_cost(matrix theta, matrix Y, matrix X) 
 {
 	// Get size
 	int* size_Y = get_size(Y);
@@ -396,7 +396,7 @@ matrix get_cost(matrix X, matrix Y, matrix theta)
 	return cost;
 }
 
-matrix get_gradient(matrix X, matrix Y, matrix theta) 
+matrix get_gradient(matrix theta, matrix Y, matrix X)
 {
 	// Get size
 	int* size_Y = get_size(Y);
@@ -428,4 +428,22 @@ matrix get_gradient(matrix X, matrix Y, matrix theta)
 	}
 
 	return grad;
+}
+
+matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
+{
+	int guessed = 0;
+	for (int j = 0; j < cols; j++)
+	{
+		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
+		double h = sigmoid(z);
+
+		int prediction = (h >= 0.5) ? 1 : 0;
+		if (prediction == Y(0, j)) 
+		{
+			guessed++;
+		}
+	}
+
+	return (static_cast<double>(guessed) / cols) * 100.0;
 }

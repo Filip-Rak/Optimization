@@ -654,7 +654,7 @@ void lab4()
 	}
 
 	// ---------- Real Problem ---------- //
-	std::cout << "//* Real Problem *//\n";
+	std::cout << "Solving for real problem...";
 
 	// Input files
 	ifstream x_matrix_file(INPUT_PATH + "XData.txt");
@@ -687,20 +687,28 @@ void lab4()
 	int iterations = sizeof(step_length) / sizeof(double);
 
 	// File reference for data output
-	fstream output_file;
+	ofstream output_file;
+	int real_n_max = 1e6;
 
 	for (int i = 0; i < iterations; i++)
 	{
 		// Open output file
-		std::string out_number = to_string(iterations);
+		std::string out_number = to_string(i + 1);
 		output_file.open(OUTPUT_PATH + "out_2_" + out_number + ".txt");
 
 		// Call the optimization function
-		// solution opt_sol = CG(get_cost, get_gradient, x_matrix, step_length[i], epsilon, Nmax, y_matrix, theta);
+		solution::clear_calls();
+		solution opt_sol = CG(get_cost, get_gradient, theta, step_length[i], epsilon, real_n_max, y_matrix, x_matrix);
+
+		// Output the solution to file
+		output_file << opt_sol << "\n";
+		output_file << "Accuracy: " << get_accuracy(opt_sol.x, x_matrix, y_matrix, cols);
 
 		// Close output file
 		output_file.close();
 	}
+
+	std::cout << "\n";
 }
 
 void lab5()

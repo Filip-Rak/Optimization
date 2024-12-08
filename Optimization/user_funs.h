@@ -115,3 +115,5 @@ double sigmoid(double z);
 matrix get_cost(matrix X, matrix Y, matrix theta);
 
 matrix get_gradient(matrix X, matrix Y, matrix theta);
+
+matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols);
