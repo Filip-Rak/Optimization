@@ -356,3 +356,15 @@ matrix Hff4T(matrix x, matrix ud1, matrix ud2)
 
 	return rt;
 }
+
+double sigmoid(double z)
+{
+	return 1.0 / (1.0 + exp(-z));
+}
+
+matrix ompute_cost(matrix& x, matrix& Y, matrix& theta)
+{
+	int m = get_len(Y);
+	std::cout << m;
+	return NULL;
+}

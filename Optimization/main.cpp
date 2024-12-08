@@ -514,6 +514,7 @@ void lab4()
 	// File output 
 	const char delimiter = '\t';
 	const string OUTPUT_PATH = "Output/lab_4/";
+	const string INPUT_PATH = "Input/lab_4/";
 
 	// ---------- Table 1 and Table 2 ----------
 
@@ -651,6 +652,33 @@ void lab4()
 	{
 		throw ("Graph values:\n" + ex_info);
 	}
+
+	// ---------- Real Problem ---------- //
+	std::cout << "//* Real Problem *//\n";
+
+	// Input files
+	ifstream x_matrix_file(INPUT_PATH + "XData.txt");
+	ifstream y_matrix_file(INPUT_PATH + "YData.txt");
+
+	// Matrix sizes
+	const int cols = 100;
+	const int x_rows = 3;
+	const int y_rows = 1;
+
+	// Load data from files into matrices (all integers)
+	matrix x_matrix(x_rows, cols);	// Data per col [a] = { x_theta, x_grade1, x_grade2 }
+	matrix y_matrix(y_rows, cols);	// Data per col [a] = { has_passed }
+
+	x_matrix_file >> x_matrix;
+	y_matrix_file >> y_matrix;
+
+	// Debug print
+	// int id = 3;
+	// std::cout << x_matrix[id] << "\n\n" << y_matrix[id];
+
+	// Close the input files
+	x_matrix_file.close();
+	y_matrix_file.close();
 	
 }
 

@@ -109,3 +109,5 @@ matrix ff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix gradff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix Hff4T(matrix x, matrix ud1, matrix ud2);
+
+matrix ompute_cost(matrix& x, matrix& Y, matrix& theta);
