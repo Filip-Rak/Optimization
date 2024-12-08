@@ -362,7 +362,7 @@ double sigmoid(double z)
 	return 1.0 / (1.0 + exp(-z));
 }
 
-matrix get_cost(const matrix X, const matrix Y, const matrix theta) 
+matrix get_cost(matrix X, matrix Y, matrix theta) 
 {
 	// Get size
 	int* size_Y = get_size(Y);
@@ -371,14 +371,14 @@ matrix get_cost(const matrix X, const matrix Y, const matrix theta)
 
 	double cost = 0.0;
 
-	for (int i = 0; i < m; ++i) 
+	for (int j = 0; j < m; ++j) 
 	{
 		// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
-		double z = theta(0, 0) + theta(1, 0) * X(i, 0) + theta(2, 0) * X(i, 1);
+		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
 		double h = sigmoid(z);
 
 		// Add to the cost
-		if (Y(i, 0) == 1) 
+		if (Y(0, j) == 1) 
 		{
 			// Slightly increase the value to avoid log(0)
 			cost += -log(h + 1e-15);
@@ -390,8 +390,42 @@ matrix get_cost(const matrix X, const matrix Y, const matrix theta)
 	}
 
 	// Average cost value
-	cost /= (double)(m);
+	cost /= static_cast<double>(m);
 
 	// Return the result as matrix
 	return cost;
+}
+
+matrix get_gradient(matrix X, matrix Y, matrix theta) 
+{
+	// Get size
+	int* size_Y = get_size(Y);
+	int m = size_Y[1];
+	delete[] size_Y;
+
+	// Initialize gradient as 3x1 matrix with zeros
+	matrix grad(3, 1, 0.0);
+
+	for (int j = 0; j < m; ++j) 
+	{
+		// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
+		double z = theta(0, 0) * X(0, j) + theta(1, 0) * X(1, j) + theta(2, 0) * X(2, j);
+		double h = sigmoid(z);
+
+		// Get the error
+		double error = h - Y(0, j);
+
+		// Update the graident
+		grad(0, 0) += error * X(0, j);	// For theta0 (bias)
+		grad(1, 0) += error * X(1, j);	// For theta1
+		grad(2, 0) += error * X(2, j);	// For theta2
+	}
+
+	// Average gradient value
+	for (int j = 0; j < 3; ++j)
+	{
+		grad(j, 0) /= static_cast<double>(m);
+	}
+
+	return grad;
 }

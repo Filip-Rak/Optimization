@@ -672,19 +672,18 @@ void lab4()
 	x_matrix_file >> x_matrix;
 	y_matrix_file >> y_matrix;
 
+	// Close the input files
+	x_matrix_file.close();
+	y_matrix_file.close();
+
 	// Debug print
 	// int id = 3;
 	// std::cout << x_matrix[id] << "\n\n" << y_matrix[id];
 
-	// matrix Y_0(4, new double[4] {x_0, vx_0, y_0, vy_0});
 	matrix theta = {3, new double[3] {0, 0, 0} };
 
-	std::cout << get_cost(x_matrix, y_matrix, theta) << "\n";
-
-	// Close the input files
-	x_matrix_file.close();
-	y_matrix_file.close();
-	
+	std::cout << "J: " << get_cost(x_matrix, y_matrix, theta) << "\n";
+	std::cout << "Gradient:\n" << get_gradient(x_matrix, y_matrix, theta) << "\n";
 }
 
 void lab5()
