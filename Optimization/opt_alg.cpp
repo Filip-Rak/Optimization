@@ -751,7 +751,7 @@ solution CG(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 		double x_i_g_pow_norm =0.0;
 		do
 		{
-			xi.grad(gf, NAN, NAN);
+			xi.grad(gf, ud1, ud2);
 			double xi_g_pow_norm = pow(norm(xi.g), 2);
 			
 			if (i != 0) {
@@ -794,7 +794,7 @@ solution CG(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 			}
 
 			xi.x = xi.x + di * h0;
-			xi.fit_fun(ff, NAN, NAN);
+			xi.fit_fun(ff, ud1, ud2);
 			
 
 			if (solution::f_calls > Nmax) {
