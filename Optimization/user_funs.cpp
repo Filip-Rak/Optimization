@@ -362,9 +362,36 @@ double sigmoid(double z)
 	return 1.0 / (1.0 + exp(-z));
 }
 
-matrix ompute_cost(matrix& x, matrix& Y, matrix& theta)
+matrix get_cost(const matrix X, const matrix Y, const matrix theta) 
 {
-	int m = get_len(Y);
-	std::cout << m;
-	return NULL;
+	// Get size
+	int* size_Y = get_size(Y);
+	int m = size_Y[0];
+	delete[] size_Y;
+
+	double cost = 0.0;
+
+	for (int i = 0; i < m; ++i) 
+	{
+		// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
+		double z = theta(0, 0) + theta(1, 0) * X(i, 0) + theta(2, 0) * X(i, 1);
+		double h = sigmoid(z);
+
+		// Add to the cost
+		if (Y(i, 0) == 1) 
+		{
+			// Slightly increase the value to avoid log(0)
+			cost += -log(h + 1e-15);
+		}
+		else 
+		{
+			cost += -log(1.0 - h + 1e-15);
+		}
+	}
+
+	// Average cost value
+	cost /= (double)(m);
+
+	// Return the result as matrix
+	return cost;
 }
