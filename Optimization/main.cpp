@@ -684,12 +684,12 @@ void lab4()
 
 	// Solve for various step lengths
 	int real_n_max = 1e6;
+	double real_epsilon = 1e-6;
 	double step_length[] = { 0.01, 0.001, 0.0001 };
 	int iterations = sizeof(step_length) / sizeof(double);
 
 	// File reference for data output
 	ofstream output_file;
-	// std::string delimiter = "\n";
 
 	for (int i = 0; i < iterations; i++)
 	{
@@ -699,7 +699,7 @@ void lab4()
 
 		// Call the optimization function
 		solution::clear_calls();
-		solution opt_sol = CG(get_cost, get_gradient, theta, step_length[i], epsilon, real_n_max, y_matrix, x_matrix);
+		solution opt_sol = CG(get_cost, get_gradient, theta, step_length[i], real_epsilon, real_n_max, y_matrix, x_matrix);
 
 		// Output the solution to file
 		output_file << opt_sol << "\n";
