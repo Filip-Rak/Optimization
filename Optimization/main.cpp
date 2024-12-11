@@ -676,15 +676,15 @@ void lab4()
 	x_matrix_file.close();
 	y_matrix_file.close();
 
-	matrix theta = {3, new double[3] {0.f, 0.f, 0.f} };
+	matrix theta = {3, new double[3] {0.1f, 0.1f, 0.1f} };
 
 	// Debug print with test values
-	// std::cout << "J: " << get_cost(x_matrix, y_matrix, theta) << "\n";
+	// std::cout << "J: " << get_cost(theta, y_matrix, x_matrix) << "\n";
 	// std::cout << "Gradient:\n" << get_gradient(x_matrix, y_matrix, theta) << "\n";
 
 	// Solve for various step lengths
-	int real_n_max = 1e6;
-	double real_epsilon = 1e-6;
+	int real_n_max = 2e5;
+	double real_epsilon = 1e-7;
 	double step_length[] = { 0.01, 0.001, 0.0001 };
 	int iterations = sizeof(step_length) / sizeof(double);
 
@@ -693,13 +693,15 @@ void lab4()
 
 	for (int i = 0; i < iterations; i++)
 	{
+		// Call the optimization function
+		std::cout << "\n--- Step = " << step_length[i] << " # ";
+		solution::clear_calls();
+		solution opt_sol = CG(get_cost, get_gradient, theta, step_length[i], real_epsilon, real_n_max, y_matrix, x_matrix);
+		std::cout << "#";
+
 		// Open output file
 		std::string out_number = to_string(i + 1);
 		output_file.open(OUTPUT_PATH + "out_2_" + out_number + ".txt");
-
-		// Call the optimization function
-		solution::clear_calls();
-		solution opt_sol = CG(get_cost, get_gradient, theta, step_length[i], real_epsilon, real_n_max, y_matrix, x_matrix);
 
 		// Output the solution to file
 		output_file << opt_sol << "\n";
