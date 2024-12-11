@@ -751,6 +751,10 @@ solution CG(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 		double x_i_g_pow_norm =0.0;
 		do
 		{
+			// Debug output
+			if (solution::f_calls % 10000 == 0 && solution::f_calls != 0)
+				std::cout << "|" << solution::f_calls / 10000 << "|";
+
 			xi.grad(gf, ud1, ud2);
 			double xi_g_pow_norm = pow(norm(xi.g), 2);
 			
