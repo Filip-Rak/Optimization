@@ -375,11 +375,10 @@ matrix get_cost(matrix theta, matrix Y, matrix X)
 {
 	// Get size
 	int* size_Y = get_size(Y);
-	int m = size_Y[0];
+	int m = size_Y[1];
 	delete[] size_Y;
 
 	double cost = 0.0;
-
 	for (int j = 0; j < m; ++j) 
 	{
 		double h = get_h_l4(theta, X, j);
