@@ -3,34 +3,25 @@ Przy dużej długości kroku (h=0.01), algorytm może oscylować wokół minimum
 - Duże kroki powodują, że algorytm przeskakuje przez minimum, zamiast stopniowo się do niego zbliżać.
 - W efekcie algorytm potrzebuje więcej iteracji, aby dostatecznie zmniejszyć wartość funkcji kosztu J(theta*), spełniając kryterium stopu.
 
-# 2. Małe kroki przy dużym epsilonie szybko się poddały i nie uzsykały odpowiedniej optymalizacji
-Małe kroki (h=0.001, h=0.0001) powodują bardzo małe zmiany w wartościach parametrów theta w każdej iteracji. 
-Jeśli kryterium stopu (określone przez epsilon) jest zbyt mało wymagające:
-- Algorytm szybko uznaje, że osiągnął zbieżność, ponieważ zmiany w funkcji kosztu j(theta*) są mniejsze niż próg epsilon.
-- W rzeczywistości algorytm nie zdążył zminimalizować funkcji kosztu do odpowiedniego poziomu, ponieważ zakończył działanie zbyt wcześnie.
-
-# 3. Duża długość kroku i mały epsilon prowadzą do braku zbieżności
+# 2. Duża długość kroku prowadzi do braku zbieżności
 Duży krok (h=0.01):
 - Powoduje przeskakiwanie przez minimum, co prowadzi do oscylacji lub "rozbiegania się" parametrów theta.
 - Algorytm próbuje znaleźć minimum, ale z każdym krokiem odchodzi coraz dalej, zamiast zbliżać się do rozwiązania.
 
-Mały epsilon (10e−6):
+Mały epsilon (1e−7):
 Zmusza algorytm do kontynuowania działania aż do osiągnięcia bardzo wysokiej precyzji.
 W przypadku dużego kroku algorytm wykonuje setki tysięcy iteracji, co:
 - Akumuluje błędy numeryczne w obliczeniach gradientów.
 - Prowadzi do ekstremalnych wartości parametrów theta, które są niestabilne.
 
-Efekt końcowy: brak zbieżności lub uzyskanie nienaturalnych wyników (theta0∗=213702).
+Efekt końcowy: brak zbieżności lub uzyskanie nienaturalnych wyników (theta0∗=-20.6563).
 
-# 4. Mały krok i mały epsilon daje oczekiwane wyniki
+# 3. Mały krok daje oczekiwane wyniki
 Małe kroki (h=0.001, h=0.0001):
 - Powodują stopniowe i stabilne zmniejszanie wartości funkcji kosztu J(thetha∗).
 - Dzięki temu algorytm unika oscylacji i dokładnie eksploruje przestrzeń parametrów.
-Mały epsilon (10−6):
-- Wymusza kontynuowanie iteracji do momentu osiągnięcia wysokiej precyzji.
-- Algorytm wykonuje dostateczną liczbę iteracji, aby znaleźć prawdziwe minimum funkcji kosztu.
 Brak błędów numerycznych:
-- Mniejsze kroki redukują ryzyko akumulacji błędów numerycznych, ponieważ zmiany w θθ w każdej iteracji są niewielkie i bardziej stabilne.
+- Mniejsze kroki redukują ryzyko akumulacji błędów numerycznych, ponieważ zmiany w theta w każdej iteracji są niewielkie i bardziej stabilne.
 Efekt końcowy:
 - Funkcja kosztu J(thetha∗) jest minimalizowana poprawnie.
 - Wartości parametrów theta∗ są realistyczne i sensowne.
