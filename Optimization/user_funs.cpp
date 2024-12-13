@@ -309,24 +309,6 @@ matrix ff3R(matrix x, matrix ud1, matrix ud2)
 // Own Functions LAB4
 // ------------------
 
-double norm_no_sqrt(const matrix& x)
-{
-	int* nA = get_size(x);
-	if (nA[1] != 1) {
-		freeIntTab2D(nA);
-		throw string("double norm_no_sqrt(const matrix&):\nnorma jest zdefiniowana tylko dla wektorow pionowych");
-	}
-	double N = 0.0;
-	for (int i = 0; i < nA[0]; ++i)
-		N += pow(x(i), 2);
-	if (isnan(N))
-		std::cout << x(0) << " " << x(1) << std::endl;
-	
-	freeIntTab2D(nA);
-	
-	return N;
-}
-
 matrix ff4T(matrix x, matrix ud1, matrix ud2)
 {
 	if (isnan(ud2(0)))
@@ -357,16 +339,11 @@ matrix Hff4T(matrix x, matrix ud1, matrix ud2)
 	return rt;
 }
 
-double sigmoid(double z)
-{
-	return 1.0 / (1.0 + exp(-z));
-}
-
 double get_h_l4(matrix theta, matrix X, int col)
 {
 	// Get z = thetha0 * 1 + theta1 * x1 + theta2 * x2
 	double z = theta(0, 0) * X(0, col) + theta(1, 0) * X(1, col) + theta(2, 0) * X(2, col);
-	double h = sigmoid(z);
+	double h = 1.0 / (1.0 + exp(-z));
 
 	return h;
 }

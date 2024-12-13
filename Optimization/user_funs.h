@@ -102,15 +102,13 @@ matrix ff3R(matrix x, matrix ud1, matrix ud2);
 
 // Own Functions LAB4
 // ------------------
-double norm_no_sqrt(const matrix& x);
+
 
 matrix ff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix gradff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix Hff4T(matrix x, matrix ud1, matrix ud2);
-
-double sigmoid(double z);
 
 double get_h_l4(matrix theta, matrix X, int col);
 
