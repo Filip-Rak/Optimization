@@ -1,0 +1,28 @@
+# 1. Liczba iteracji dla dużej długości kroku i dużego epsilona jest znacznie mniejsza niż dla mniejszych długości kroków
+Przy dużej długości kroku (h=0.01), algorytm może oscylować wokół minimum, zamiast skutecznie zbiegać do niego. Dzieje się tak, ponieważ:
+- Duże kroki powodują, że algorytm przeskakuje przez minimum, zamiast stopniowo się do niego zbliżać.
+- W efekcie algorytm potrzebuje więcej iteracji, aby dostatecznie zmniejszyć wartość funkcji kosztu J(theta*), spełniając kryterium stopu.
+
+# 2. Duża długość kroku prowadzi do braku zbieżności
+Duży krok (h=0.01):
+- Powoduje przeskakiwanie przez minimum, co prowadzi do oscylacji lub "rozbiegania się" parametrów theta.
+- Algorytm próbuje znaleźć minimum, ale z każdym krokiem odchodzi coraz dalej, zamiast zbliżać się do rozwiązania.
+
+Mały epsilon (1e−7):
+Zmusza algorytm do kontynuowania działania aż do osiągnięcia bardzo wysokiej precyzji.
+W przypadku dużego kroku algorytm wykonuje setki tysięcy iteracji, co:
+- Akumuluje błędy numeryczne w obliczeniach gradientów.
+- Prowadzi do ekstremalnych wartości parametrów theta, które są niestabilne.
+
+Efekt końcowy: brak zbieżności lub uzyskanie nienaturalnych wyników (theta0∗=-20.6563).
+
+# 3. Mały krok daje oczekiwane wyniki
+Małe kroki (h=0.001, h=0.0001):
+- Powodują stopniowe i stabilne zmniejszanie wartości funkcji kosztu J(thetha∗).
+- Dzięki temu algorytm unika oscylacji i dokładnie eksploruje przestrzeń parametrów.
+Brak błędów numerycznych:
+- Mniejsze kroki redukują ryzyko akumulacji błędów numerycznych, ponieważ zmiany w theta w każdej iteracji są niewielkie i bardziej stabilne.
+Efekt końcowy:
+- Funkcja kosztu J(thetha∗) jest minimalizowana poprawnie.
+- Wartości parametrów theta∗ są realistyczne i sensowne.
+- Klasyfikacja (P(theta∗)=84%) jest poprawna i stabilna.
