@@ -36,6 +36,7 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 	{
 		double* p = new double[2]{ 0,0 };
 		//Tu wpisz kod funkcji
+		//std::cout << x0 << std::endl;
 		solution X0(x0), X1(x0 + d);
 		X0.fit_fun(ff, ud1, ud2);
 		X1.fit_fun(ff, ud1, ud2);
@@ -65,10 +66,11 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 		do
 		{
 			if (solution::f_calls > Nmax) {
-				
-				throw string(string("Nie znaleziono przedzialu po " +  Nmax) + " probach");
+				break;
+				//throw "Nie znaleziono przedzialu po " + Nmax ;
 			}
-			prev = m2d(X0.x);
+			
+			prev = X0.x(0);
 			X0 = X1;
 			X1.x = x0 + alpha * d;
 			X1.fit_fun(ff, ud1, ud2);
@@ -944,13 +946,38 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 		do
 		{
 			matrix p = matrix(DIM,DIM+1);
-			matrix h = 
+			p.set_col(xi,0);
 			for(int j = 1; j <= DIM; j++)
 			{
-				//wyznacz hj(i)
+				//wyznacz h
+				//std::cout << " range: \n";
+				double* range = expansion(ff, -100.0, 100.0, 2.0, Nmax, p[j - 1], d[j-1]);
+				double h0 = m2d(golden(ff, range[0], range[1], epsilon, Nmax, p[j - 1], d[j - 1]).x);
+				p.set_col(p[j - 1] + d[j - 1] * h0,j);
+				delete[] range;
 			}
-			if(norm())
-				
+			if (norm(p[DIM] - xi) < epsilon)
+			{
+				Xopt.x = xi;
+				Xopt.flag = 0;
+				break;
+			}
+			for (int j = 0; j < DIM-1; j++)
+			{
+				d.set_col(d[j+1],j);
+			}
+			d.set_col(p[DIM] - p[0], DIM - 1);
+
+			double* range = expansion(ff, 0, 10.0, 2.0, Nmax, p[DIM], d[DIM - 1]);
+			double h0 = m2d(golden(ff, range[0], range[1], epsilon, Nmax, p[DIM], d[DIM - 1]).x);
+			xi = p[DIM] + h0 * d[DIM - 1];
+			delete[] range;
+			if (solution::f_calls > Nmax)
+			{
+				Xopt.x = xi;
+				Xopt.flag = -2;
+				break;
+			}
 		} while(true);
 		return Xopt;
 	}

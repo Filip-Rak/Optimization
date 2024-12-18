@@ -121,6 +121,23 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols);
 // Own Functions LAB5
 // ------------------
 
-matrix ff5T1(matrix x, matrix ud1 = 1.0, matrix ud2 = NAN);
+void set_weight(int i);
+void init_weights();
 
-matrix ff5T2(matrix x, matrix ud1 = 1.0, matrix ud2 = NAN);
+matrix ff5T1_1(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T2_1(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T3_1(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T1_10(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T2_10(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T3_10(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T1_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T2_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+matrix ff5T3_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);

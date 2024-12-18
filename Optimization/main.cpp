@@ -724,6 +724,55 @@ void lab4()
 
 void lab5()
 {
+	// Common arguments
+	double epsilon = 1e-3;
+	int Nmax = 1000;
+
+	// File output 
+	const char delimiter = '\t';
+	const string OUTPUT_PATH = "Output/lab_5/";
+	const string INPUT_PATH = "Input/lab_5/";
+
+	// Set weights
+	init_weights();
+
+	// Init random number generator
+	srand(time(NULL));
+
+	// ---------- Table 1 ----------
+	std::cout << "Solving for Table 1...\n";
+
+	double max_values[2]{ 10.0, 10.0 };
+	double min_values[2]{ -10.0, -10.0 };
+
+	{
+		matrix test = matrix(2, new double[2] {
+			min_values[0] + static_cast<double>(rand()) / RAND_MAX * (max_values[0] - min_values[0]),
+				min_values[1] + static_cast<double>(rand()) / RAND_MAX * (max_values[1] - min_values[1])
+			});
+
+		ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
+		if (!tfun_file1.good()) return;
+
+
+		for (int i = 0; i < 101; i++)
+		{
+			set_weight(i);
+			tfun_file1 << test(0) << delimiter << test(1) << delimiter;
+			solution is1 = Powell(ff5T3_1, test, epsilon, Nmax, NAN, NAN);
+			tfun_file1 << is1.x(0) << delimiter << is1.x(1) << delimiter << ff5T1_1(is1.x, NAN, NAN) << delimiter << ff5T2_1(is1.x, NAN, NAN) << delimiter << solution::f_calls << delimiter;
+			solution::clear_calls();
+			solution is10 = Powell(ff5T3_10, test, epsilon, Nmax, NAN, NAN);
+			tfun_file1 << is10.x(0) << delimiter << is10.x(1) << delimiter << ff5T1_10(is10.x, NAN, NAN) << delimiter << ff5T2_10(is10.x, NAN, NAN) << delimiter << solution::f_calls << delimiter;
+			solution::clear_calls();
+			solution is100 = Powell(ff5T3_100, test, epsilon, Nmax, NAN, NAN);
+			tfun_file1 << is100.x(0) << delimiter << is100.x(1) << delimiter << ff5T1_100(is100.x, NAN, NAN) << delimiter << ff5T2_100(is100.x, NAN, NAN) << delimiter << solution::f_calls << delimiter;
+			solution::clear_calls();
+			tfun_file1 << std::endl;
+		}
+
+		tfun_file1.close();
+	}
 
 }
 

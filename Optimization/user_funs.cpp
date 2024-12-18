@@ -432,13 +432,73 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
 // Own Functions LAB5
 // ------------------
 
-matrix ff5T1(matrix x, matrix ud1, matrix ud2)
+static double weights[101];
+static int weight_i = -1;
+
+void set_weight(int i)
 {
-	//double a = ud1(0);
-	return a*(pow( x(0) - 2.0 )+pow( x(1) - 2.0 )));
+	weight_i = i;
 }
-matrix ff5T2(matrix x, matrix ud1, matrix ud2)
+
+void init_weights()
 {
-	//double a = ud1(0);
-	return (1/a)*(pow( x(0) + 2.0 )+pow( x(1) + 2.0 )));
+	for (int i = 0; i < 101; i++)
+	{
+		weights[i] = static_cast<double>(i) * 0.01;
+	}
+}
+
+matrix ff5T1_1(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return (pow( x(0) - 2.0 )+pow( x(1) - 2.0 ));
+	else
+		return (pow(ud1(0) + x(0) * ud2(0) - 2.0) + pow(ud1(1) + x(0) * ud2(1) - 2.0));
+}
+matrix ff5T2_1(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return (pow(x(0) + 2.0) + pow(x(1) + 2.0));
+	else
+		return (pow(ud1(0) + x(0) * ud2(0) + 2.0) + pow(ud1(1) + x(0) * ud2(1) + 2.0));
+}
+matrix ff5T3_1(matrix x, matrix ud1, matrix ud2)
+{
+	return weights[weight_i] * ff5T1_1(x, ud1, ud2) + (1.0 - weights[weight_i]) * ff5T2_1(x, ud1, ud2);
+}
+matrix ff5T1_10(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return 10.0*(pow(x(0) - 2.0) + pow(x(1) - 2.0));
+	else
+		return 10.0*(pow(ud1(0) + x(0) * ud2(0) - 2.0) + pow(ud1(1) + x(0) * ud2(1) - 2.0));
+}
+matrix ff5T2_10(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return 0.1*(pow(x(0) + 2.0) + pow(x(1) + 2.0));
+	else
+		return 0.1*(pow(ud1(0) + x(0) * ud2(0) + 2.0) + pow(ud1(1) + x(0) * ud2(1) + 2.0));
+}
+matrix ff5T3_10(matrix x, matrix ud1, matrix ud2)
+{
+	return weights[weight_i] * ff5T1_10(x, ud1, ud2) + (1.0 - weights[weight_i]) * ff5T2_10(x, ud1, ud2);
+}
+matrix ff5T1_100(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return 100.0 * (pow(x(0) - 2.0) + pow(x(1) - 2.0));
+	else 
+		return 100.0 * (pow(ud1(0) + x(0) * ud2(0) - 2.0) + pow(ud1(1) + x(0) * ud2(1) - 2.0));
+}
+matrix ff5T2_100(matrix x, matrix ud1, matrix ud2)
+{
+	if (isnan(ud2(0)))
+		return 0.01 * (pow(x(0) + 2.0) + pow(x(1) + 2.0));
+	else
+		return 0.01 * (pow(ud1(0) + x(0) * ud2(0) + 2.0) + pow(ud1(1) + x(0) * ud2(1) + 2.0));
+}
+matrix ff5T3_100(matrix x, matrix ud1, matrix ud2)
+{
+	return weights[weight_i] * ff5T1_100(x, ud1, ud2) + (1.0 - weights[weight_i]) * ff5T2_100(x, ud1, ud2);
 }
