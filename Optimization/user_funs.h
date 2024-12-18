@@ -117,3 +117,10 @@ matrix get_cost(matrix X, matrix Y, matrix theta);
 matrix get_gradient(matrix X, matrix Y, matrix theta);
 
 matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols);
+
+// Own Functions LAB5
+// ------------------
+
+matrix ff4T1(matrix x, matrix ud1 = 1.0, matrix ud2 = NAN);
+
+matrix ff4T2(matrix x, matrix ud1 = 1.0, matrix ud2 = NAN);
