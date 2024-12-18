@@ -754,7 +754,6 @@ void lab5()
 		ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
 		if (!tfun_file1.good()) return;
 
-
 		for (int i = 0; i < 101; i++)
 		{
 			set_weight(i);
