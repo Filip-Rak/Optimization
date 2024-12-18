@@ -937,7 +937,21 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 	{
 		solution Xopt;
 		//Tu wpisz kod funkcji
-
+		int DIM = get_len(x0);
+		matrix e = ident_mat(DIM);
+		matrix d = matrix(e);
+		matrix xi = x0;
+		do
+		{
+			matrix p = matrix(DIM,DIM+1);
+			matrix h = 
+			for(int j = 1; j <= DIM; j++)
+			{
+				//wyznacz hj(i)
+			}
+			if(norm())
+				
+		} while(true);
 		return Xopt;
 	}
 	catch (string ex_info)
