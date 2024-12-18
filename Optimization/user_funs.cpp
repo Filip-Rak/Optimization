@@ -427,3 +427,18 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
 
 	return (static_cast<double>(guessed) / cols) * 100.0;
 }
+
+
+// Own Functions LAB5
+// ------------------
+
+matrix ff5T1(matrix x, matrix ud1, matrix ud2)
+{
+	//double a = ud1(0);
+	return a*(pow( x(0) - 2.0 )+pow( x(1) - 2.0 )));
+}
+matrix ff5T2(matrix x, matrix ud1, matrix ud2)
+{
+	//double a = ud1(0);
+	return (1/a)*(pow( x(0) + 2.0 )+pow( x(1) + 2.0 )));
+}
