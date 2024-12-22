@@ -578,12 +578,14 @@ matrix ff5R_penalty(matrix x, matrix ud1, matrix ud2)
 
 	// Stress in Pa
 	double stress = m2d(ff5R_stress(x, ud1, ud2));
-	std::cout << "Stress: " << stress / 1e6 << " MPa\n";
 
 	double penalty = 0.0;
 	double reflection_max = 5.0e-3;     // Meters
 	double stress_max = 300e6;  // MPa -> Pa
-	std::cout << std::fixed << "Stress max: " << stress_max / 1e6 << " MPa\n";
+
+	// Debug output
+	// std::cout << "Stress: " << stress / 1e6 << " MPa\n";
+	// std::cout << std::fixed << "Stress max: " << stress_max / 1e6 << " MPa\n";
 
 	// Penalty scaling
 	// double w_u = 1e2;        // Deflection
@@ -605,8 +607,29 @@ matrix ff5R_penalty(matrix x, matrix ud1, matrix ud2)
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return fitness/error scalar as 1d matrix
 */
-matrix ff5R(matrix x, matrix ud1, matrix ud2) 
+matrix ff5R(matrix ud1, matrix x, matrix ud2) // Switch x and ud1 to fix expansion call
 {
+
+	// If ud2 is not NaN apply adjustments from ud1 and ud2
+	/* if (!isnan(ud2(0)))
+	{
+		x(0, 0) = ud1(0) + x(0, 0) * ud2(0);
+		x(1, 0) = ud1(1) + x(1, 0) * ud2(1);
+	}
+	*/
+	static bool entry = true;
+	if (entry)
+	{
+		std::cout << "----------\n";
+		std::cout << "ff5R args:\n";
+		std::cout << "x vals:\n" << x << "\n";
+		std::cout << "ud1 vals:\n" << ud1 << "\n";
+		std::cout << "ud2 vals:\n" << ud2 << "\n";
+		std::cout << "----------\n";
+
+		entry = false;
+	}
+
 	double weight = weights[weight_i];
 
 	// Get mass, deflection and penalty
@@ -621,9 +644,11 @@ matrix ff5R(matrix x, matrix ud1, matrix ud2)
 	// double m_converted = m2d(mass) * 1000;
 	// double u_converted = m2d(deflection);
 
+	// Debug output
+	// std::cout << "FF5R: mass -> " << m2d(mass) << " delfection -> " << m2d(deflection)
+		// << " penalty -> " << m2d(penalty) << " weight -> " << weight << "\n";
+
 	// Objective function calculation (weighted combination)
-	std::cout << "FF5R: mass -> " << m2d(mass) << " delfection -> " << m2d(deflection) 
-		<< " penalty -> " << m2d(penalty) << " weight -> " << weight << "\n" ;
 	double objective = weight * m2d(mass) + (1.0 - weight) * m2d(deflection) + m2d(penalty);
 	return matrix(objective);
 }

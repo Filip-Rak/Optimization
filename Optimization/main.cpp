@@ -807,8 +807,8 @@ void lab5()
 
 	set_weight(50);
 
-	// solution rp = Powell(ff5R, x0, epsilon, Nmax, NAN, NAN);
-	matrix rp = ff5R(x0);
+	solution rp = Powell(ff5R, x0, epsilon, Nmax, NULL, NULL);
+	// matrix rp = ff5R(x0);
 	std::cout << rp << "\n";
 
 }
