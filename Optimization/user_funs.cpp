@@ -1,4 +1,4 @@
-#include"user_funs.h"
+﻿#include"user_funs.h"
 
 matrix ff0T(matrix x, matrix ud1, matrix ud2)
 {
@@ -435,6 +435,7 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
 static double weights[101];
 static int weight_i = -1;
 
+/* Test Function */
 void set_weight(int i)
 {
 	weight_i = i;
@@ -501,4 +502,128 @@ matrix ff5T2_100(matrix x, matrix ud1, matrix ud2)
 matrix ff5T3_100(matrix x, matrix ud1, matrix ud2)
 {
 	return weights[weight_i] * ff5T1_100(x, ud1, ud2) + (1.0 - weights[weight_i]) * ff5T2_100(x, ud1, ud2);
+}
+
+/* Real Problem */
+// Constants
+const double density = 7800.0; // kg/m^3 (rho)
+const double force = 1000.0; // 1 kN (P)
+const double youngs_modulus = 207e9; // E in Pa (GPa -> Pa)
+const double pi = 3.141592653;
+
+/*
+	@brief Calculates beam's stress
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return stress in Pa = N/m^2 as 1d matrix
+*/
+matrix ff5R_stress(matrix x, matrix ud1, matrix ud2) 
+{
+	double beam_length = x(0, 0);
+	double csd = x(1, 0);
+
+	// Calculate stress
+	double stress = (32.0 * force * beam_length) / (pi * pow(csd, 3));
+	return matrix(stress);
+}
+
+/*
+	@brief Calculates beam's mass
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return mass in kg as 1d matrix
+*/
+matrix ff5R_mass(matrix x, matrix ud1, matrix ud2) 
+{
+	double beam_length = x(0);
+	double csd = x(1);
+
+	// Cross-sectional area
+	double csa = pi * pow(csd / 2.0, 2); // m^2
+
+	// Calculate mass
+	double mass = density * csa * beam_length; // kg
+	return matrix(mass);
+}
+
+/*
+	@brief Calculates beam's deflection
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return deflection in meters as 1d matrix
+*/
+matrix ff5R_deflection(matrix x, matrix ud1, matrix ud2) 
+{
+	double beam_length = x(0, 0);
+	double csd = x(1, 0);
+
+	// Deflection in meters
+	double deflection = (64.0 * force * pow(beam_length, 3)) / (3.0 * youngs_modulus * pi * pow(csd, 4));
+	return matrix(deflection);
+}
+
+/*
+	@brief Calculates penalty based on stress and deflection
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return penalty in meters as 1d matrix
+*/
+matrix ff5R_penalty(matrix x, matrix ud1, matrix ud2) 
+{
+	double beam_length = x(0, 0);
+	double d = x(1, 0);
+
+	// Deflection in meters
+	double deflection = m2d(ff5R_deflection(x, ud1, ud2));
+
+	// Stress in Pa
+	double stress = m2d(ff5R_stress(x, ud1, ud2));
+	std::cout << "Stress: " << stress / 1e6 << " MPa\n";
+
+	double penalty = 0.0;
+	double reflection_max = 5.0e-3;     // Meters
+	double stress_max = 300e6;  // MPa -> Pa
+	std::cout << std::fixed << "Stress max: " << stress_max / 1e6 << " MPa\n";
+
+	// Penalty scaling
+	// double w_u = 1e2;        // Deflection
+	// double w_sigma = 1e5;   // Stress
+
+	// Apply penalties as precentages of miss
+	if (deflection > reflection_max)
+		penalty += (deflection - reflection_max) / reflection_max;
+
+	if (stress > stress_max)
+		penalty += (stress - stress_max) / stress_max;
+
+	return matrix(penalty);
+}
+
+/*
+	@brief Beam model with applied penalty
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return fitness/error scalar as 1d matrix
+*/
+matrix ff5R(matrix x, matrix ud1, matrix ud2) 
+{
+	double weight = weights[weight_i];
+
+	// Get mass, deflection and penalty
+	matrix mass = ff5R_mass(x, ud1, ud2);
+	matrix deflection = ff5R_deflection(x, ud1, ud2);
+	matrix penalty = ff5R_penalty(x, ud1, ud2);
+
+	// Normalization
+	// double max_mass = 15.31246;  // Kilograms
+	// double max_deflection = 0.00098;  // Meters
+
+	// double m_converted = m2d(mass) * 1000;
+	// double u_converted = m2d(deflection);
+
+	// Objective function calculation (weighted combination)
+	std::cout << "FF5R: mass -> " << m2d(mass) << " delfection -> " << m2d(deflection) 
+		<< " penalty -> " << m2d(penalty) << " weight -> " << weight << "\n" ;
+	double objective = weight * m2d(mass) + (1.0 - weight) * m2d(deflection) + m2d(penalty);
+	return matrix(objective);
 }

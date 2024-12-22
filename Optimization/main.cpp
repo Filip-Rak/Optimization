@@ -773,6 +773,44 @@ void lab5()
 		tfun_file1.close();
 	}
 
+	/* Real Problem Test */
+
+	// Example starting point
+	/*
+	matrix x0(2, 1);
+	x0(0) = 1.f; // l = 1m
+	x0(1) = 0.05f;  // d = 50 mm
+
+	// Set the weighty
+	set_weight(50); // w = 0.5
+
+	// Get the value
+	matrix objective = ff5R(x0, NAN, NAN);
+	std::cout << std::fixed << "Funkcja celu: " << objective(0, 0) << std::endl;
+
+	// Get mass, deflection and penalty seperately
+	matrix mass = ff5R_mass(x0, NAN, NAN);
+	matrix deflection = ff5R_deflection(x0, NAN, NAN);
+	matrix penalty = ff5R_penalty(x0, NAN, NAN);
+
+	std::cout << std::fixed << "Masa belki: " << mass(0, 0) << " kg\n";
+	std::cout << std::fixed << "Ugiecie belki: " << deflection(0, 0) * 1000 << " mm\n";
+	std::cout << std::fixed << "Kara: " << penalty(0, 0) << "\n";
+	*/
+
+	/* Real Problem Optimization */
+	matrix x0 = matrix(2, new double[2] 
+		{
+			0.500f, // l = 500 mm
+			0.050f  // d = 50 mm
+		});
+
+	set_weight(50);
+
+	// solution rp = Powell(ff5R, x0, epsilon, Nmax, NAN, NAN);
+	matrix rp = ff5R(x0);
+	std::cout << rp << "\n";
+
 }
 
 void lab6()

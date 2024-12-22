@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include"ode_solver.h"
@@ -124,6 +124,8 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols);
 void set_weight(int i);
 void init_weights();
 
+/* Test Function */
+
 matrix ff5T1_1(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix ff5T2_1(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
@@ -141,3 +143,11 @@ matrix ff5T1_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix ff5T2_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 matrix ff5T3_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
+/* Real Problem */
+matrix ff5R_stress(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff5R_mass(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff5R_deflection(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff5R_penalty(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff5R(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
