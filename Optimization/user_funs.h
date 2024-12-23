@@ -123,6 +123,7 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols);
 
 void set_weight(int i);
 void init_weights();
+double get_weight();
 
 /* Test Function */
 
@@ -145,9 +146,44 @@ matrix ff5T2_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix ff5T3_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 /* Real Problem */
+
+/*
+	@brief Calculates beam's stress
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return stress in Pa = N/m^2 as 1d matrix
+*/
 matrix ff5R_stress(matrix x);
+
+/*
+	@brief Calculates beam's mass
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return mass in kg as 1d matrix
+*/
 matrix ff5R_mass(matrix x);
+
+/*
+	@brief Calculates beam's deflection
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return deflection in meters as 1d matrix
+*/
 matrix ff5R_deflection(matrix x);
+
+/*
+	@brief Calculates penalty based on stress and deflection
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return penalty in meters as 1d matrix
+*/
 matrix ff5R_penalty(matrix x);
+
+/*
+	@brief Beam model with applied penalty
+	@param matrix x(0) = beam length (meters)
+	@param matrix x(1) = cross-sectional diameter (meters)
+	@return fitness/error scalar as 1d matrix
+*/
 matrix ff5R(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
 
