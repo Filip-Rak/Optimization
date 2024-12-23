@@ -145,9 +145,9 @@ matrix ff5T2_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 matrix ff5T3_100(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
 
 /* Real Problem */
-matrix ff5R_stress(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
-matrix ff5R_mass(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
-matrix ff5R_deflection(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
-matrix ff5R_penalty(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
-matrix ff5R(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff5R_stress(matrix x);
+matrix ff5R_mass(matrix x);
+matrix ff5R_deflection(matrix x);
+matrix ff5R_penalty(matrix x);
+matrix ff5R(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
 

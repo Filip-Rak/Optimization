@@ -805,11 +805,15 @@ void lab5()
 			0.050f  // d = 50 mm
 		});
 
-	set_weight(50);
+	set_weight(0);
 
+	std::cout << "----RESULT----\n";
 	solution rp = Powell(ff5R, x0, epsilon, Nmax, NULL, NULL);
 	// matrix rp = ff5R(x0);
-	std::cout << rp << "\n";
+	std::cout << rp;
+	std::cout << "Mass: " << ff5R_mass(rp.x) << "\n";
+	std::cout << "Deflection: " << ff5R_deflection(rp.x) << "\n";
+	// std::cout << "Penalty:\n" << ff5R_penalty(x0) << "\n";
 
 }
 

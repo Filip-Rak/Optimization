@@ -517,7 +517,7 @@ const double pi = 3.141592653;
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return stress in Pa = N/m^2 as 1d matrix
 */
-matrix ff5R_stress(matrix x, matrix ud1, matrix ud2) 
+matrix ff5R_stress(matrix x) 
 {
 	double beam_length = x(0, 0);
 	double csd = x(1, 0);
@@ -533,7 +533,7 @@ matrix ff5R_stress(matrix x, matrix ud1, matrix ud2)
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return mass in kg as 1d matrix
 */
-matrix ff5R_mass(matrix x, matrix ud1, matrix ud2) 
+matrix ff5R_mass(matrix x) 
 {
 	double beam_length = x(0);
 	double csd = x(1);
@@ -552,7 +552,7 @@ matrix ff5R_mass(matrix x, matrix ud1, matrix ud2)
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return deflection in meters as 1d matrix
 */
-matrix ff5R_deflection(matrix x, matrix ud1, matrix ud2) 
+matrix ff5R_deflection(matrix x) 
 {
 	double beam_length = x(0, 0);
 	double csd = x(1, 0);
@@ -568,35 +568,67 @@ matrix ff5R_deflection(matrix x, matrix ud1, matrix ud2)
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return penalty in meters as 1d matrix
 */
-matrix ff5R_penalty(matrix x, matrix ud1, matrix ud2) 
+matrix ff5R_penalty(matrix x) 
 {
 	double beam_length = x(0, 0);
-	double d = x(1, 0);
+	double csr = x(1, 0);
 
 	// Deflection in meters
-	double deflection = m2d(ff5R_deflection(x, ud1, ud2));
+	double deflection = m2d(ff5R_deflection(x));
 
 	// Stress in Pa
-	double stress = m2d(ff5R_stress(x, ud1, ud2));
+	double stress = m2d(ff5R_stress(x));
 
 	double penalty = 0.0;
-	double reflection_max = 5.0e-3;     // Meters
-	double stress_max = 300e6;  // MPa -> Pa
+	const double penalty_modifier = 1e15;
+	const double max_length = 1;	// Meters
+	const double min_length = 0.200;	// Meters
+	const double csr_max = 0.050;	// Meters
+	const double csr_min = 0.010;	// Meters
+	const double reflection_max = 5.0e-3;     // Meters
+	const double stress_max = 300e6;  // MPa -> Pa
 
 	// Debug output
 	// std::cout << "Stress: " << stress / 1e6 << " MPa\n";
 	// std::cout << std::fixed << "Stress max: " << stress_max / 1e6 << " MPa\n";
 
-	// Penalty scaling
-	// double w_u = 1e2;        // Deflection
-	// double w_sigma = 1e5;   // Stress
+	// Apply penalties as precentages of offset
+	if (beam_length < min_length)
+	{
+		double diff = min_length - beam_length;
+		penalty += penalty_modifier * (diff / min_length);
+	}
 
-	// Apply penalties as precentages of miss
+	if (beam_length > max_length)
+	{
+		double diff = beam_length - max_length;
+		penalty += penalty_modifier * (diff / max_length);
+	}
+
+	if (csr < csr_min)
+	{
+		double diff = csr_min - csr;
+		penalty += penalty_modifier * (diff / csr_min);
+	}
+
+	if (csr > csr_max)
+	{
+		double diff = csr - csr_max;
+		penalty += penalty_modifier * (diff / csr_max);
+	}
+
 	if (deflection > reflection_max)
-		penalty += (deflection - reflection_max) / reflection_max;
+		penalty += penalty_modifier * (deflection - reflection_max) / reflection_max;
 
 	if (stress > stress_max)
-		penalty += (stress - stress_max) / stress_max;
+		penalty += penalty_modifier * (stress - stress_max) / stress_max;
+
+	if (stress < 0 || deflection < 0)
+	{
+		std::cout << "STRESS BAD: " << stress << "\n";
+		std::cout << "DEF BAD: " << deflection << "\n";
+		std::cout << "PENALTY: " << penalty << "\n";
+	}
 
 	return matrix(penalty);
 }
@@ -607,22 +639,22 @@ matrix ff5R_penalty(matrix x, matrix ud1, matrix ud2)
 	@param matrix x(1) = cross-sectional diameter (meters)
 	@return fitness/error scalar as 1d matrix
 */
-matrix ff5R(matrix ud1, matrix x, matrix ud2) // Switch x and ud1 to fix expansion call
+matrix ff5R(matrix x, matrix ud1, matrix ud2) // Swap x and ud1 to fix expansion call
 {
-
 	// If ud2 is not NaN apply adjustments from ud1 and ud2
-	/* if (!isnan(ud2(0)))
-	{
-		x(0, 0) = ud1(0) + x(0, 0) * ud2(0);
-		x(1, 0) = ud1(1) + x(1, 0) * ud2(1);
-	}
-	*/
+	matrix xi;
+	if (!isnan(ud2(0)))
+		xi = ud1 + m2d(x) * ud2;
+	else
+		xi = x;
+
 	static bool entry = true;
 	if (entry)
 	{
 		std::cout << "----------\n";
 		std::cout << "ff5R args:\n";
 		std::cout << "x vals:\n" << x << "\n";
+		std::cout << "xi vals:\n" << x << "\n";
 		std::cout << "ud1 vals:\n" << ud1 << "\n";
 		std::cout << "ud2 vals:\n" << ud2 << "\n";
 		std::cout << "----------\n";
@@ -633,9 +665,9 @@ matrix ff5R(matrix ud1, matrix x, matrix ud2) // Switch x and ud1 to fix expansi
 	double weight = weights[weight_i];
 
 	// Get mass, deflection and penalty
-	matrix mass = ff5R_mass(x, ud1, ud2);
-	matrix deflection = ff5R_deflection(x, ud1, ud2);
-	matrix penalty = ff5R_penalty(x, ud1, ud2);
+	matrix mass = ff5R_mass(xi);
+	matrix deflection = ff5R_deflection(xi);
+	matrix penalty = ff5R_penalty(xi);
 
 	// Normalization
 	// double max_mass = 15.31246;  // Kilograms
