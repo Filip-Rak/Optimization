@@ -773,48 +773,65 @@ void lab5()
 		tfun_file1.close();
 	}
 
-	/* Real Problem Test */
+	/* Real Problem */
+	std::cout << "Solving for Table 2...";
 
-	// Example starting point
-	/*
-	matrix x0(2, 1);
-	x0(0) = 1.f; // l = 1m
-	x0(1) = 0.05f;  // d = 50 mm
+	// Output file
+	ofstream rp_file(OUTPUT_PATH + "out2.txt");
 
-	// Set the weighty
-	set_weight(50); // w = 0.5
+	// Optimizer settings
+	double real_epsilon = 1e-10;
+	double real_nmax = 20000;
 
-	// Get the value
-	matrix objective = ff5R(x0, NAN, NAN);
-	std::cout << std::fixed << "Funkcja celu: " << objective(0, 0) << std::endl;
+	// Constraints in meters
+	// Beam length (l)
+	const double beam_length_min = 0.200f;
+	const double beam_length_max = 1.000f;
 
-	// Get mass, deflection and penalty seperately
-	matrix mass = ff5R_mass(x0, NAN, NAN);
-	matrix deflection = ff5R_deflection(x0, NAN, NAN);
-	matrix penalty = ff5R_penalty(x0, NAN, NAN);
+	// Cross sectional diameter (d)
+	const double csd_min = 0.010;	
+	const double csd_max = 0.050;
 
-	std::cout << std::fixed << "Masa belki: " << mass(0, 0) << " kg\n";
-	std::cout << std::fixed << "Ugiecie belki: " << deflection(0, 0) * 1000 << " mm\n";
-	std::cout << std::fixed << "Kara: " << penalty(0, 0) << "\n";
-	*/
+	// Loop over all weights
+	const int weight_number = 101;
+	for (int i = 0; i < weight_number; i++)
+	{
+		// Randomize beam's properties
+		double beam_length = beam_length_min + static_cast<double>(rand()) / RAND_MAX * (beam_length_max - beam_length_min);
+		double csd = csd_min + static_cast<double>(rand()) / RAND_MAX * (csd_max - csd_min);
+		
+		matrix x0 = matrix(2, new double[2] {beam_length, csd});
 
-	/* Real Problem Optimization */
-	matrix x0 = matrix(2, new double[2] 
-		{
-			0.500f, // l = 500 mm
-			0.050f  // d = 50 mm
-		});
+		// Set the weight
+		set_weight(i);
 
-	set_weight(0);
+		// Call the optimizer
+		solution opt_res = Powell(ff5R, x0, real_epsilon, real_nmax, NULL, NULL);
 
-	std::cout << "----RESULT----\n";
-	solution rp = Powell(ff5R, x0, epsilon, Nmax, NULL, NULL);
-	// matrix rp = ff5R(x0);
-	std::cout << rp;
-	std::cout << "Mass: " << ff5R_mass(rp.x) << "\n";
-	std::cout << "Deflection: " << ff5R_deflection(rp.x) << "\n";
-	// std::cout << "Penalty:\n" << ff5R_penalty(x0) << "\n";
+		// Output data to the file
+		rp_file << get_weight() << delimiter			// Weight used for calculation
+			<< beam_length * 1000.f << delimiter		// Random beam's length (l) in mm
+			<< csd * 1000.f << delimiter;				// Random cross-sectional diameter (d) in mm
 
+		rp_file << opt_res.x(0) * 1000.f << delimiter	// Optimized beam's length (l*) in mm
+			<< opt_res.x(1) * 1000.f << delimiter		// Optimized cross-sectional diameter (d*) in mm
+			<< ff5R_mass(opt_res.x)(0) << delimiter		// Mass for optimized X in kg
+			<< ff5R_deflection(opt_res.x)(0) * 1000.f << delimiter	// Deflection for optimized X in mm
+			<< opt_res.f_calls << delimiter				// Fit function calls to reach the solution
+			<< opt_res.flag;							// Solution's flag
+
+		// Add newline character between data
+		rp_file << "\n";
+
+		// Clear f_calls after saving to output
+		solution::clear_calls();
+	}
+
+	// Close the output file
+	rp_file.close();
+
+	// Add new line for readability
+	std::cout << "\n";
 }
 
 void lab6()

@@ -62,7 +62,7 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 				return p;
 			}
 		}
-		double prev;
+		double prev = X0.x(0);
 		do
 		{
 			if (solution::f_calls > Nmax) {

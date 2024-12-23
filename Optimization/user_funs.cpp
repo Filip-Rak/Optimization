@@ -435,7 +435,6 @@ matrix get_accuracy(matrix theta, matrix X, matrix Y, int cols)
 static double weights[101];
 static int weight_i = -1;
 
-/* Test Function */
 void set_weight(int i)
 {
 	weight_i = i;
@@ -449,6 +448,12 @@ void init_weights()
 	}
 }
 
+double get_weight()
+{
+	return weights[weight_i];
+}
+
+/* Test Function */
 matrix ff5T1_1(matrix x, matrix ud1, matrix ud2)
 {
 	if (isnan(ud2(0)))
@@ -511,32 +516,20 @@ const double force = 1000.0; // 1 kN (P)
 const double youngs_modulus = 207e9; // E in Pa (GPa -> Pa)
 const double pi = 3.141592653;
 
-/*
-	@brief Calculates beam's stress
-	@param matrix x(0) = beam length (meters)
-	@param matrix x(1) = cross-sectional diameter (meters)
-	@return stress in Pa = N/m^2 as 1d matrix
-*/
 matrix ff5R_stress(matrix x) 
 {
 	double beam_length = x(0, 0);
-	double csd = x(1, 0);
+	double csd = x(1, 0);	// cross-sectional diameter
 
 	// Calculate stress
 	double stress = (32.0 * force * beam_length) / (pi * pow(csd, 3));
 	return matrix(stress);
 }
 
-/*
-	@brief Calculates beam's mass
-	@param matrix x(0) = beam length (meters)
-	@param matrix x(1) = cross-sectional diameter (meters)
-	@return mass in kg as 1d matrix
-*/
 matrix ff5R_mass(matrix x) 
 {
 	double beam_length = x(0);
-	double csd = x(1);
+	double csd = x(1);	// cross-sectional diameter
 
 	// Cross-sectional area
 	double csa = pi * pow(csd / 2.0, 2); // m^2
@@ -546,32 +539,20 @@ matrix ff5R_mass(matrix x)
 	return matrix(mass);
 }
 
-/*
-	@brief Calculates beam's deflection
-	@param matrix x(0) = beam length (meters)
-	@param matrix x(1) = cross-sectional diameter (meters)
-	@return deflection in meters as 1d matrix
-*/
 matrix ff5R_deflection(matrix x) 
 {
 	double beam_length = x(0, 0);
-	double csd = x(1, 0);
+	double csd = x(1, 0);	// cross-sectional diameter
 
 	// Deflection in meters
 	double deflection = (64.0 * force * pow(beam_length, 3)) / (3.0 * youngs_modulus * pi * pow(csd, 4));
 	return matrix(deflection);
 }
 
-/*
-	@brief Calculates penalty based on stress and deflection
-	@param matrix x(0) = beam length (meters)
-	@param matrix x(1) = cross-sectional diameter (meters)
-	@return penalty in meters as 1d matrix
-*/
 matrix ff5R_penalty(matrix x) 
 {
 	double beam_length = x(0, 0);
-	double csr = x(1, 0);
+	double csd = x(1, 0);	// cross-sectional diameter
 
 	// Deflection in meters
 	double deflection = m2d(ff5R_deflection(x));
@@ -579,76 +560,72 @@ matrix ff5R_penalty(matrix x)
 	// Stress in Pa
 	double stress = m2d(ff5R_stress(x));
 
+	// Penalty and constraints
 	double penalty = 0.0;
 	const double penalty_modifier = 1e15;
+	const double penalty_base = 1e5;
 	const double max_length = 1;	// Meters
 	const double min_length = 0.200;	// Meters
-	const double csr_max = 0.050;	// Meters
-	const double csr_min = 0.010;	// Meters
+	const double csd_max = 0.050;	// Meters
+	const double csd_min = 0.010;	// Meters
 	const double reflection_max = 5.0e-3;     // Meters
 	const double stress_max = 300e6;  // MPa -> Pa
 
-	// Debug output
-	// std::cout << "Stress: " << stress / 1e6 << " MPa\n";
-	// std::cout << std::fixed << "Stress max: " << stress_max / 1e6 << " MPa\n";
+	/* Apply penalties as proportion of offset */
 
-	// Apply penalties as precentages of offset
+	// Beam length
 	if (beam_length < min_length)
 	{
 		double diff = min_length - beam_length;
-		penalty += penalty_modifier * (diff / min_length);
+		penalty += penalty_modifier * (diff / min_length) + penalty_base;
 	}
 
 	if (beam_length > max_length)
 	{
 		double diff = beam_length - max_length;
-		penalty += penalty_modifier * (diff / max_length);
+		penalty += penalty_modifier * (diff / max_length) + penalty_base;
 	}
 
-	if (csr < csr_min)
+	// Cross sectionnal diameter
+	if (csd < csd_min)
 	{
-		double diff = csr_min - csr;
-		penalty += penalty_modifier * (diff / csr_min);
+		double diff = csd_min - csd;
+		penalty += penalty_modifier * (diff / csd_min) + penalty_base;
 	}
 
-	if (csr > csr_max)
+	if (csd > csd_max)
 	{
-		double diff = csr - csr_max;
-		penalty += penalty_modifier * (diff / csr_max);
+		double diff = csd - csd_max;
+		penalty += penalty_modifier * (diff / csd_max) + penalty_base;
 	}
 
+	// Deflection
 	if (deflection > reflection_max)
-		penalty += penalty_modifier * (deflection - reflection_max) / reflection_max;
+		penalty += penalty_modifier * (deflection - reflection_max) / reflection_max + penalty_base;
 
+	if (deflection < 0.f)
+		penalty += penalty_modifier * (-deflection);
+
+	// Stress
 	if (stress > stress_max)
-		penalty += penalty_modifier * (stress - stress_max) / stress_max;
+		penalty += penalty_modifier * (stress - stress_max) / stress_max + penalty_base;
 
-	if (stress < 0 || deflection < 0)
-	{
-		std::cout << "STRESS BAD: " << stress << "\n";
-		std::cout << "DEF BAD: " << deflection << "\n";
-		std::cout << "PENALTY: " << penalty << "\n";
-	}
+	if (stress < 0.f)
+		penalty += penalty_modifier * (-stress) + penalty_base;
 
+	// Return the total penalty
 	return matrix(penalty);
 }
 
-/*
-	@brief Beam model with applied penalty
-	@param matrix x(0) = beam length (meters)
-	@param matrix x(1) = cross-sectional diameter (meters)
-	@return fitness/error scalar as 1d matrix
-*/
-matrix ff5R(matrix x, matrix ud1, matrix ud2) // Swap x and ud1 to fix expansion call
+matrix ff5R(matrix x, matrix ud1, matrix ud2)
 {
 	// If ud2 is not NaN apply adjustments from ud1 and ud2
-	matrix xi;
+	matrix xi = x;
 	if (!isnan(ud2(0)))
 		xi = ud1 + m2d(x) * ud2;
-	else
-		xi = x;
 
-	static bool entry = true;
+	// Debug; Set [entry] to true to enable
+	static bool entry = false;
 	if (entry)
 	{
 		std::cout << "----------\n";
@@ -661,24 +638,13 @@ matrix ff5R(matrix x, matrix ud1, matrix ud2) // Swap x and ud1 to fix expansion
 
 		entry = false;
 	}
-
+	// Get the weight
 	double weight = weights[weight_i];
 
 	// Get mass, deflection and penalty
 	matrix mass = ff5R_mass(xi);
 	matrix deflection = ff5R_deflection(xi);
 	matrix penalty = ff5R_penalty(xi);
-
-	// Normalization
-	// double max_mass = 15.31246;  // Kilograms
-	// double max_deflection = 0.00098;  // Meters
-
-	// double m_converted = m2d(mass) * 1000;
-	// double u_converted = m2d(deflection);
-
-	// Debug output
-	// std::cout << "FF5R: mass -> " << m2d(mass) << " delfection -> " << m2d(deflection)
-		// << " penalty -> " << m2d(penalty) << " weight -> " << weight << "\n";
 
 	// Objective function calculation (weighted combination)
 	double objective = weight * m2d(mass) + (1.0 - weight) * m2d(deflection) + m2d(penalty);
