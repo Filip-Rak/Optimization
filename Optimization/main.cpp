@@ -780,7 +780,7 @@ void lab5()
 	ofstream rp_file(OUTPUT_PATH + "out2.txt");
 
 	// Optimizer settings
-	double real_epsilon = 1e-10;
+	double real_epsilon = 1e-8;
 	double real_nmax = 20000;
 
 	// Constraints in meters
@@ -809,16 +809,18 @@ void lab5()
 		solution opt_res = Powell(ff5R, x0, real_epsilon, real_nmax, NULL, NULL);
 
 		// Output data to the file
-		rp_file << get_weight() << delimiter			// Weight used for calculation
-			<< beam_length * 1000.f << delimiter		// Random beam's length (l) in mm
-			<< csd * 1000.f << delimiter;				// Random cross-sectional diameter (d) in mm
+		rp_file
+			<< get_weight() << delimiter			// Weight used for calculation
+			<< beam_length * 1000.f << delimiter	// Random beam's length (l) in mm
+			<< csd * 1000.f << delimiter;			// Random cross-sectional diameter (d) in mm
 
-		rp_file << opt_res.x(0) * 1000.f << delimiter	// Optimized beam's length (l*) in mm
-			<< opt_res.x(1) * 1000.f << delimiter		// Optimized cross-sectional diameter (d*) in mm
-			<< ff5R_mass(opt_res.x)(0) << delimiter		// Mass for optimized X in kg
+		rp_file 
+			<< opt_res.x(0) * 1000.f << delimiter	// Optimized beam's length (l*) in mm
+			<< opt_res.x(1) * 1000.f << delimiter	// Optimized cross-sectional diameter (d*) in mm
+			<< ff5R_mass(opt_res.x)(0) << delimiter	// Mass for optimized X in kg
 			<< ff5R_deflection(opt_res.x)(0) * 1000.f << delimiter	// Deflection for optimized X in mm
-			<< opt_res.f_calls << delimiter				// Fit function calls to reach the solution
-			<< opt_res.flag;							// Solution's flag
+			<< opt_res.f_calls << delimiter			// Fit function calls to reach the solution
+			<< opt_res.flag;						// Solution's flag
 
 		// Add newline character between data
 		rp_file << "\n";
