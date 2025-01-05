@@ -746,16 +746,15 @@ void lab5()
 	double min_values[2]{ -10.0, -10.0 };
 
 	{
-		matrix test = matrix(2, new double[2] {
-			min_values[0] + static_cast<double>(rand()) / RAND_MAX * (max_values[0] - min_values[0]),
-				min_values[1] + static_cast<double>(rand()) / RAND_MAX * (max_values[1] - min_values[1])
-			});
-
 		ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
 		if (!tfun_file1.good()) return;
 
 		for (int i = 0; i < 101; i++)
 		{
+			matrix test = matrix(2, new double[2] {
+				min_values[0] + static_cast<double>(rand()) / RAND_MAX * (max_values[0] - min_values[0]),
+					min_values[1] + static_cast<double>(rand()) / RAND_MAX * (max_values[1] - min_values[1])
+				});
 			set_weight(i);
 			tfun_file1 << test(0) << delimiter << test(1) << delimiter;
 			solution is1 = Powell(ff5T3_1, test, epsilon, Nmax, NAN, NAN);
@@ -771,6 +770,7 @@ void lab5()
 		}
 
 		tfun_file1.close();
+		//return;
 	}
 
 	/* Real Problem */
