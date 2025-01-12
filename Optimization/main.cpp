@@ -30,7 +30,8 @@ int main()
 		// lab2();
 		// lab3();
 		// lab4();
-		lab5();
+		// lab5();
+		lab6();
 	}
 	catch (string EX_INFO)
 	{
@@ -835,8 +836,52 @@ void lab5()
 	// Add new line for readability
 	std::cout << "\n";
 }
+#include <memory>
 
+class DoubleTabWrapper
+{
+public:
+	double* ptr;
+	DoubleTabWrapper(double* ptr)
+	{
+		this->ptr = ptr;
+	}
+
+	double* get() {
+		return this->ptr;
+	}
+	
+	~DoubleTabWrapper()
+	{
+		if(this->ptr)
+			delete[] this->ptr;
+	}
+};
+
+#include <typeinfo>
+#include <thread>
 void lab6()
 {
-
+	matrix 
+		lb(2, std::unique_ptr<double[]>(new double[2] { -5.0, -5.0 }).get()),
+		ub(2, std::unique_ptr<double[]>(new double[2] { 5.0, 5.0 }).get());
+	//return;
+	double epsilon = 1e-4;
+	int mi = 5;
+	int lambd = 5;
+	int Nmax = 1e+8;
+	int correct = 0;
+	int loops = 0;
+	while (!correct) {
+		loops++;
+		for (int i = 0; i < 25; i++) {
+			solution::clear_calls();
+			solution x = EA(ff6_T, 2, lb, ub, mi, lambd, 0.01, epsilon, Nmax, NAN, NAN);
+			if (x.flag != -2) {
+				std::cout << x << std::endl;
+				correct++;
+			}
+		}
+	}
+	std::cout << " correct values scored : " << correct << " times, after " << loops << " loops\n";
 }

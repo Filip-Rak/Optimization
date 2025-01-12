@@ -986,13 +986,197 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 		throw ("solution Powell(...):\n" + ex_info);
 	}
 }
+#include <random>
+#include <forward_list>
+#include <set>
 
-solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, int mi, int lambda, matrix sigma0, double epsilon, int Nmax, matrix ud1, matrix ud2)
+const auto init_f = [](std::pair<int, double> a, std::pair<int, double> b) {
+	return (a.second) < (b.second);
+	};
+
+solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, 
+	int mi, int lambd, double sigma0, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		Xopt.flag = 0;
+		std::random_device rd{};
+		std::mt19937_64 gen{ rd() };
+		
+		std::normal_distribution<> dst{ 0.0, 1.0 };
+
+		double alpha = 1.0/sqrt(N);
+		
+		double beta = 1.0/pow(2.0 * N,0.25);
+
+		matrix P_x(N, mi);
+		matrix P_sigma(mi,1, sigma0);
+		matrix P_y(mi, nullptr);
+		static double max_gen = static_cast<double>(gen.max());
+
+		// creation of the first generation
+
+		// sorting first generation
+		
+		std::set<std::pair<int, double>, decltype(init_f)> init_y(init_f);
+		matrix* tmp_P_x = new matrix(N, mi);
+
+		for (int i = 0; i < mi; i++)
+		{
+			matrix x_i(N,nullptr);
+
+			for (int n = 0; n < N; n++)
+			{
+				unsigned long long numerator = gen();
+				x_i(n) = lb(n) + static_cast<double>(gen()) / max_gen * (ub(n) - lb(n));	
+			}
+
+			double y_i = m2d(ff(x_i, ud1, ud2));
+			solution::f_calls++;
+
+			init_y.insert(std::pair<int,double>(i, y_i));
+
+			if (y_i < epsilon)
+			{
+				Xopt.x = x_i;
+				Xopt.y = y_i;
+				delete tmp_P_x;
+				return Xopt;
+			}
+			
+			tmp_P_x->set_col(x_i, i);
+		}
+
+		for (auto init_y_i = init_y.begin(); init_y_i != init_y.end(); init_y_i++)
+		{
+			P_x.set_col(tmp_P_x->operator[](init_y_i->first), init_y_i->first);
+			P_y(init_y_i->first) = init_y_i->second;
+		}
+
+		init_y.clear();
+		delete tmp_P_x;
+		
+		do
+		{
+			// start the roulette
+			double phiS = 0.0;
+			matrix phi(mi,nullptr);
+
+			for (int j = 0; j < mi; j++)
+			{
+				phiS += phi(j) = ( 1.0 / P_y(j) );
+			}
+
+			matrix q(mi + 1, nullptr);
+			for (int j = 1; j <= mi; j++)
+			{
+				q(j) = q(j - 1) + phi(j - 1) / phiS;
+			}
+
+			double a = dst(gen);
+
+			matrix T_x(N, lambd);
+			matrix T_sigma(lambd,nullptr);
+			matrix T_y(lambd,nullptr);
+
+			for (int j = 0; j < lambd; j++)
+			{
+				// next generation require 2 parent points
+				double r = static_cast<double>(gen()) / max_gen;
+				int ka = 1;
+				while (ka != mi && (q(ka - 1) >= r || q(ka) < r)) { ka++; };
+				// first parent
+				matrix A(P_x[ka - 1]);
+				double A_sigma = P_sigma(ka - 1);
+
+				r = static_cast<double>(gen()) / max_gen;
+				int kb = 1;
+				while (kb != mi && (q(kb - 1) >= r || q(kb) < r)) { kb++; };
+				// second parent
+				matrix B(P_x[kb-1]);
+				double B_sigma = P_sigma(kb-1);
+
+				// mix both parents
+				r = static_cast<double>(gen()) / max_gen;
+				matrix T_x_j(r * A + (1.0 - r) * B);
+				double T_sigma_j = r * A_sigma + (1.0 - r) * B_sigma;
+
+				// mutate on calulated value
+				double b = dst(gen);
+				T_sigma_j *= exp(alpha * a + beta * b);
+				b = dst(gen);
+				T_x_j = T_x_j + b * T_sigma_j;
+
+				// set point value to the T matrix
+				T_sigma(j) = T_sigma_j;
+				T_x.set_col(T_x_j, j);
+				T_y(j) = m2d(ff(T_x_j, ud1, ud2));
+				solution::f_calls++;
+				/*if (T_y(j) > P_y(ka - 1) || T_y(j) > P_y(kb - 1))
+				{
+					r = static_cast<double>(gen()) / max_gen;
+					if(r > 0.7)
+						j--;
+//std::cout << "AGAIN " << j + 1 << "\n";
+				}*/
+			}
+
+			// create comparision function, to automaticly push point with smallest y value to the front and sort it by value of y
+			auto comp_f = [&P_y,&T_y](std::pair<int, int> a, std::pair<int, int> b)
+				{
+					return ((a.first) ? abs(T_y(a.second)) : abs(P_y(a.second))) < ((b.first) ? abs(T_y(b.second)) : abs(P_y(b.second)));
+				};
+			std::set<std::pair<int, int>, decltype(comp_f) > new_points(comp_f);
+			
+			int k_P = mi, k_T = lambd;
+			// insert both matrixes (indicies) to set
+			while(k_P)
+			{
+				new_points.insert(std::pair<int,int>(0, k_P - 1));
+				k_P--;
+			}
+			while (k_T)
+			{
+				new_points.insert(std::pair<int, int>(1, k_T - 1));
+				k_T--;
+			}
+
+			matrix n_P_x(N, mi);
+			matrix n_P_sigma(mi, 1, sigma0);
+			matrix n_P_y(mi, nullptr);
+			// set best (smallest) value as new solution
+			auto i_np = new_points.begin();
+			Xopt.x = (i_np->first) ? T_x[i_np->second] : P_x[i_np->second];
+			Xopt.y = (i_np->first) ? T_y(i_np->second) : (P_y(i_np->second));
+			
+			// select mi best points for next the parent matrix
+			for (int i = 0; i < mi; i++)
+			{
+				n_P_x.set_col((i_np->first) ? T_x[i_np->second] : P_x[i_np->second], i);
+				n_P_sigma(i) = (i_np->first) ? T_sigma(i_np->second) : P_sigma(i_np->second);
+				n_P_y(i) = (i_np->first) ? T_y(i_np->second) : P_y(i_np->second);
+
+				i_np++;
+			}
+
+
+			// overwrite old values with new
+			P_x = n_P_x;
+			P_sigma = n_P_sigma;
+			n_P_y = n_P_y;
+			
+			if (solution::f_calls > Nmax)
+			{
+				Xopt.flag = -2;
+
+				break;
+			}
+
+			// with sufficiently low value we exit the loop and return solution
+		} while (m2d(Xopt.y) > epsilon);
+
+		
 
 		return Xopt;
 	}

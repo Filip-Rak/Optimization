@@ -35,7 +35,10 @@ matrix::matrix(int nv, double* A)
 	for (int i = 0; i < n; ++i)
 	{
 		M[i] = new double[1];
-		M[i][0] = A[i];
+		if (A)
+			M[i][0] = A[i];
+		else
+			M[i][0] = .0;
 	}
 }
 

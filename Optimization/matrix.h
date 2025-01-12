@@ -21,7 +21,7 @@ class matrix
 public:
 	matrix(double = 0.0);
 	matrix(int, int, double = 0.0); // throw (string);
-	matrix(int, double*); // throw (string);
+	matrix(int, double*);   // throw (string);
 	matrix(int, int, double**); // throw (string);
 	matrix(const matrix&);
 	~matrix();

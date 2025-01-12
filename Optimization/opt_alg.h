@@ -35,4 +35,15 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 
 solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, int Nmax, matrix ud1 = NAN, matrix ud2 = NAN); // throw (string);
 
-solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, int mi, int lambda, matrix sigma0, double epsilon, int Nmax, matrix ud1 = NAN, matrix ud2 = NAN); // throw (string);
+/*
+* @param ff - function pointer
+* @param N - number of decision variables
+* @param lb - lower boundary
+* @param ub - upper boundary
+* @param mi - number of base population
+* @param lambda - number of temporary population
+* @param sigma0 - starting value of the mutation range coefficient
+* @param epsilon - precision
+* @param Nmax - maximum number of iterations
+*/
+solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, int mi, int lambda, double sigma0, double epsilon, int Nmax, matrix ud1 = NAN, matrix ud2 = NAN); // throw (string);

@@ -650,3 +650,12 @@ matrix ff5R(matrix x, matrix ud1, matrix ud2)
 	double objective = weight * m2d(mass) + (1.0 - weight) * m2d(deflection) + m2d(penalty);
 	return matrix(objective);
 }
+
+// Own Functions LAB5
+// ------------------
+
+matrix ff6_T(matrix x, matrix ud1, matrix ud2)
+{
+	static double d_2o5_pi = 2.5 * pi;
+	return x(0) * x(0) + x(1) * x(1) - cos(d_2o5_pi * x(0)) - cos(d_2o5_pi * x(1)) + 2.0;
+}

@@ -187,3 +187,7 @@ matrix ff5R_penalty(matrix x);
 */
 matrix ff5R(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
 
+// Own Functions LAB6
+// ------------------
+
+matrix ff6_T(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
