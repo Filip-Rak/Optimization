@@ -691,10 +691,21 @@ matrix ff6R_motion(matrix b, matrix k)
 	double time_step = 0.1;
 
 	// Solve diferential equation
+	// [u_pos, u_speed, l_pos, l_speed]
 	matrix* results = solve_ode(ff6R_derivative, start_time, time_step, end_time, Y0, b, k);
 
+	// Extract position
+	int rows = 1001;
+	matrix positions(rows, 2);
+
+	for (int i = 0; i < rows; i++)
+	{
+		positions(i, 0) = results[1](i, 0); // u_pos
+		positions(i, 1) = results[1](i, 2); // l_pos
+	}
+
 	// Return results of position in time
-	return results[1];
+	return positions;
 }
 
 matrix ff6R_error(matrix simulation_results, matrix experimental_data)
