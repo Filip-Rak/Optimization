@@ -862,6 +862,8 @@ public:
 #include <thread>
 void lab6()
 {
+	const string INPUT_PATH = "Input/lab_6/";
+
 	matrix 
 		lb(2, std::unique_ptr<double[]>(new double[2] { -5.0, -5.0 }).get()),
 		ub(2, std::unique_ptr<double[]>(new double[2] { 5.0, 5.0 }).get());
@@ -891,6 +893,16 @@ void lab6()
 
 	/* Real Problem */
 rp:
-	std::cout << "RP\n";
 
+	// Files
+	ifstream pos_file(INPUT_PATH + "positions.txt");
+
+	// Load positions from file to matrix
+	int cols = 2;
+	int rows = 1001;
+
+	matrix pos_data(rows, cols);
+	pos_file >> pos_data;
+
+	std::cout << pos_data << "\n";
 }
