@@ -191,3 +191,10 @@ matrix ff5R(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
 // ------------------
 
 matrix ff6_T(matrix x, matrix ud1 = NULL, matrix ud2 = NULL);
+
+/* Real Problem */
+
+matrix ff6R_motion(matrix b, matrix k);
+matrix ff6R_derivative(double t, matrix Y, matrix b, matrix k);
+matrix ff6R_error(matrix simulation_results, matrix experimental_data);
+matrix ff6R(matrix b, matrix ud1 = NAN, matrix ud2 = NAN);

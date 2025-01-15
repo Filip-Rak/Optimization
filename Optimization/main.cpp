@@ -872,6 +872,10 @@ void lab6()
 	int Nmax = 1e+8;
 	int correct = 0;
 	int loops = 0;
+
+	/* SKIP TO REAL PROBLEM */
+	goto rp;
+
 	while (!correct) {
 		loops++;
 		for (int i = 0; i < 25; i++) {
@@ -884,4 +888,9 @@ void lab6()
 		}
 	}
 	std::cout << " correct values scored : " << correct << " times, after " << loops << " loops\n";
+
+	/* Real Problem */
+rp:
+	std::cout << "RP\n";
+
 }

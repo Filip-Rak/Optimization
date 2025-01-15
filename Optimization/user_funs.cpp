@@ -659,3 +659,63 @@ matrix ff6_T(matrix x, matrix ud1, matrix ud2)
 	static double d_2o5_pi = 2.5 * pi;
 	return x(0) * x(0) + x(1) * x(1) - cos(d_2o5_pi * x(0)) - cos(d_2o5_pi * x(1)) + 2.0;
 }
+
+/* Real Problem */
+matrix ff6R_derivative(double t, matrix Y, matrix b, matrix k)
+{
+	// Physical parameters
+	double mass_upper = 5.f, mass_lower = 5.f;
+	double damping_upper = b(0), damping_lower = b(1);
+	double spring_upper = k(0), spring_lower = k(1);
+	double external_force = 1.f;
+
+	// Motion equation
+	matrix dY(4, 1);
+	dY(0) = Y(1); // dx1 / dt
+	dY(1) = (-damping_upper * Y(1) - damping_lower * (Y(1) - Y(3)) - spring_upper * Y(0) - spring_lower * (Y(0) - Y(2))) / mass_upper;
+	dY(2) = Y(3); // dx2 / dt
+	dY(3) = (external_force - damping_lower * (Y(1) - Y(3)) - spring_lower * (Y(0) - Y(2))) / mass_lower;
+	return dY;
+}
+
+matrix ff6R_motion(matrix b, matrix k)
+{
+	// Starting conditions
+	double upper_position = 0.f, upper_speed = 0.f;
+	double lower_position = 0.f, lower_speed = 0.f;
+	matrix Y0 = matrix(4, new double[4] {upper_position, upper_speed, lower_position, lower_speed});
+
+	// Time parameters
+	double start_time = 0.0;
+	double end_time = 100.0;
+	double time_step = 0.1;
+
+	// Solve diferential equation
+	matrix* results = solve_ode(ff6R_derivative, start_time, time_step, end_time, Y0, b, k);
+
+	// Return results of position in time
+	return results[1];
+}
+
+matrix ff6R_error(matrix simulation_results, matrix experimental_data)
+{
+	double error = 0.0;
+	int length = get_len(simulation_results);
+	for (int i = 0; i < length; ++i)
+	{
+		error += pow(simulation_results(i, 0) - experimental_data(i, 0), 2); // Squared error
+		error += pow(simulation_results(i, 1) - experimental_data(i, 1), 2);
+	}
+
+	// Return average error
+	return matrix(sqrt(error / length));
+}
+
+matrix ff6R(matrix b, matrix experimental_data, matrix k)
+{
+	// Simulate motion for given b parameters
+	matrix simulation_results = ff6R_motion(b, k);
+
+	// Return the error between simulation and experiment
+	return ff6R_error(simulation_results, experimental_data);
+}
