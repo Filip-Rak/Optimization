@@ -711,19 +711,29 @@ matrix ff6R_motion(matrix b, matrix k)
 matrix ff6R_error(matrix simulation_results, matrix experimental_data)
 {
 	double error = 0.0;
-	int length = get_len(simulation_results);
-	for (int i = 0; i < length; ++i)
+	// Read the number of rows
+	int* size = get_size(simulation_results);
+	int rows = size[0];
+	delete[] size;
+
+	for (int i = 0; i < rows; ++i)
 	{
 		error += pow(simulation_results(i, 0) - experimental_data(i, 0), 2); // Squared error
 		error += pow(simulation_results(i, 1) - experimental_data(i, 1), 2);
 	}
 
 	// Return average error
-	return matrix(sqrt(error / length));
+	return matrix(sqrt(error / rows));
 }
 
 matrix ff6R(matrix b, matrix experimental_data, matrix k)
 {
+	static int calls = 0;
+	calls += 1;
+	if (calls % 100 == 0)
+		std::cout << "ff6R calls: " << calls << "\n";
+		 
+
 	// Simulate motion for given b parameters
 	matrix simulation_results = ff6R_motion(b, k);
 

@@ -862,6 +862,7 @@ public:
 #include <thread>
 void lab6()
 {
+	const string OUTPUT_PATH = "Output/lab_6/";
 	const string INPUT_PATH = "Input/lab_6/";
 
 	matrix 
@@ -876,7 +877,7 @@ void lab6()
 	int loops = 0;
 
 	/* SKIP TO REAL PROBLEM */
-	// goto rp;
+	goto rp;
 
 	while (!correct) {
 		loops++;
@@ -895,6 +896,8 @@ void lab6()
 rp:
 	// Files
 	ifstream pos_file(INPUT_PATH + "positions.txt");
+	ofstream rp_opt_file(INPUT_PATH + "out_rp1_opt.txt");
+	ofstream sim_file(OUTPUT_PATH + "out_rp2_sim.txt");
 
 	// Optimizer settings
 	double rp_lower_bound = 0.f;
@@ -902,9 +905,9 @@ rp:
 	matrix rp_lb(2, std::unique_ptr<double[]>(new double[2] {rp_lower_bound, rp_lower_bound}).get());
 	matrix rp_ub(2, std::unique_ptr<double[]>(new double[2] {rp_upper_bound, rp_upper_bound}).get());
 
-	double rp_epsilon = 1e-4, rp_sigma = 0.01f;
+	double rp_epsilon = 1e-2, rp_sigma = 0.01f;
 	int rp_mi = 5, rp_lambda = 5;
-	int rp_n_max = 1e8, rp_n = 2;
+	int rp_n_max = 1e6, rp_n = 2;
 
 	// Problem data
 	matrix spring_constants(2, new double[2] {1.f, 1.f});
@@ -913,14 +916,20 @@ rp:
 	matrix pos_data(rows, cols);
 	pos_file >> pos_data;
 
-	// Start optimizer
-	// solution rp_solution = EA(ff6R, rp_n, rp_lb, rp_ub, rp_mi, rp_lambda, rp_sigma, rp_epsilon, rp_n_max, pos_data, spring_constants);
-	// std::cout << rp_solution << "\n";
+	// Optimize dampness values (b)
+	solution rp_solution = EA(ff6R, rp_n, rp_lb, rp_ub, rp_mi, rp_lambda, rp_sigma, rp_epsilon, rp_n_max, pos_data, spring_constants);
+	rp_opt_file << rp_solution;
 
-	// Test model 
-	/*matrix b = matrix(2, new double[2] {1.5, 2.0});
-	matrix k = matrix(2, new double[2] {1.0, 1.0});
-	matrix sim_res = ff6R_motion(b, k);
+	// Run simulation with optimized dampness
+	matrix sim_res = ff6R_motion(rp_solution.x, spring_constants);
+	sim_file << sim_res;
 
-	std::cout << sim_res << "\n";*/
+	// Print error of simulation
+	matrix error = ff6R_error(sim_res, pos_data);
+	std::cout << "RP_error: " << error << "\n";
+
+	// Close files
+	pos_file.close();
+	rp_opt_file.close();
+	sim_file.close();
 }
