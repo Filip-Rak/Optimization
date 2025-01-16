@@ -990,10 +990,6 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 #include <forward_list>
 #include <set>
 
-const auto init_f = [](std::pair<int, double> a, std::pair<int, double> b) {
-	return (a.second) < (b.second);
-	};
-
 solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, 
 	int mi, int lambd, double sigma0, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
@@ -1001,24 +997,28 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 	{
 		solution Xopt;
 		Xopt.flag = 0;
-		std::random_device rd{};
-		std::mt19937_64 gen{ rd() };
+		static std::random_device rd{};
+		static std::mt19937_64 gen{ rd() };
 		
-		std::normal_distribution<> dst{ 0.0, 1.0 };
+		static std::normal_distribution<> dst{ 0.0, 1.0 };
 
-		double alpha = 1.0/sqrt(N);
+		double alpha = sqrt(N);
 		
-		double beta = 1.0/pow(2.0 * N,0.25);
+		double beta = pow(2.0 * N ,-0.25);
 
 		matrix P_x(N, mi);
-		matrix P_sigma(mi,1, sigma0);
+		matrix P_sigma(N, mi, sigma0);
+		//std::cout << P_sigma << std::endl;
 		matrix P_y(mi, nullptr);
 		static double max_gen = static_cast<double>(gen.max());
 
 		// creation of the first generation
 
 		// sorting first generation
-		
+		const auto init_f = [](std::pair<int, double> a, std::pair<int, double> b) {
+			return (a.second) < (b.second);
+			};
+
 		std::set<std::pair<int, double>, decltype(init_f)> init_y(init_f);
 		matrix* tmp_P_x = new matrix(N, mi);
 
@@ -1029,7 +1029,7 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			for (int n = 0; n < N; n++)
 			{
 				unsigned long long numerator = gen();
-				x_i(n) = lb(n) + static_cast<double>(gen()) / max_gen * (ub(n) - lb(n));	
+				x_i(n) = lb(n) + (static_cast<double>(gen()) / max_gen) * (ub(n) - lb(n));	
 			}
 
 			double y_i = m2d(ff(x_i, ud1, ud2));
@@ -1047,11 +1047,12 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			
 			tmp_P_x->set_col(x_i, i);
 		}
-
+		int init_i = 0;
 		for (auto init_y_i = init_y.begin(); init_y_i != init_y.end(); init_y_i++)
 		{
-			P_x.set_col(tmp_P_x->operator[](init_y_i->first), init_y_i->first);
-			P_y(init_y_i->first) = init_y_i->second;
+			P_x.set_col(tmp_P_x->operator[](init_y_i->first), init_i);
+			P_y(init_i) = init_y_i->second;
+			init_i++;
 		}
 
 		init_y.clear();
@@ -1073,53 +1074,53 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			{
 				q(j) = q(j - 1) + phi(j - 1) / phiS;
 			}
-
+			double r = static_cast<double>(gen()) / max_gen;
+			
+			//return NULL;
 			double a = dst(gen);
-
+			
 			matrix T_x(N, lambd);
-			matrix T_sigma(lambd,nullptr);
+			matrix T_sigma(N, lambd);
 			matrix T_y(lambd,nullptr);
 
 			for (int j = 0; j < lambd; j++)
 			{
 				// next generation require 2 parent points
 				double r = static_cast<double>(gen()) / max_gen;
+
 				int ka = 1;
-				while (ka != mi && (q(ka - 1) >= r || q(ka) < r)) { ka++; };
+				while (ka != mi && !(q(ka - 1) < r && q(ka) >= r)) { ka++; };
 				// first parent
 				matrix A(P_x[ka - 1]);
-				double A_sigma = P_sigma(ka - 1);
-
+				matrix A_sigma(P_sigma[ka - 1]);
+				//std::cout << A_sigma << std::endl;
 				r = static_cast<double>(gen()) / max_gen;
 				int kb = 1;
-				while (kb != mi && (q(kb - 1) >= r || q(kb) < r)) { kb++; };
+				while (kb != mi && !(q(kb - 1) < r && q(kb) >= r)) { kb++; };
+
 				// second parent
-				matrix B(P_x[kb-1]);
-				double B_sigma = P_sigma(kb-1);
+				matrix B(P_x[kb - 1]);
+				matrix B_sigma(P_sigma[ka - 1]);
 
 				// mix both parents
 				r = static_cast<double>(gen()) / max_gen;
 				matrix T_x_j(r * A + (1.0 - r) * B);
-				double T_sigma_j = r * A_sigma + (1.0 - r) * B_sigma;
-
+				//matrix T_sigma_j(r * A_sigma + (1.0 - r) * B_sigma);
+				matrix T_sigma_j((A_sigma + B_sigma)*.5);
 				// mutate on calulated value
-				double b = dst(gen);
-				T_sigma_j *= exp(alpha * a + beta * b);
-				b = dst(gen);
-				T_x_j = T_x_j + b * T_sigma_j;
+				
+				for (int jk = 0; jk < N; jk++) {
+					double b = dst(gen);
+					T_sigma_j(jk) = exp(alpha * a + beta * b) * T_sigma_j(jk);
+					b = dst(gen);
+					T_x_j(jk) = T_x_j(jk) + b * T_sigma_j(jk);
+				}
 
 				// set point value to the T matrix
-				T_sigma(j) = T_sigma_j;
+				T_sigma.set_col(T_sigma_j,j);
 				T_x.set_col(T_x_j, j);
 				T_y(j) = m2d(ff(T_x_j, ud1, ud2));
 				solution::f_calls++;
-				/*if (T_y(j) > P_y(ka - 1) || T_y(j) > P_y(kb - 1))
-				{
-					r = static_cast<double>(gen()) / max_gen;
-					if(r > 0.7)
-						j--;
-//std::cout << "AGAIN " << j + 1 << "\n";
-				}*/
 			}
 
 			// create comparision function, to automaticly push point with smallest y value to the front and sort it by value of y
@@ -1143,8 +1144,9 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			}
 
 			matrix n_P_x(N, mi);
-			matrix n_P_sigma(mi, 1, sigma0);
+			matrix n_P_sigma(N, mi, sigma0);
 			matrix n_P_y(mi, nullptr);
+
 			// set best (smallest) value as new solution
 			auto i_np = new_points.begin();
 			Xopt.x = (i_np->first) ? T_x[i_np->second] : P_x[i_np->second];
@@ -1154,9 +1156,9 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			for (int i = 0; i < mi; i++)
 			{
 				n_P_x.set_col((i_np->first) ? T_x[i_np->second] : P_x[i_np->second], i);
-				n_P_sigma(i) = (i_np->first) ? T_sigma(i_np->second) : P_sigma(i_np->second);
+				n_P_sigma.set_col((i_np->first) ? T_sigma[i_np->second] : P_sigma[i_np->second],i);
 				n_P_y(i) = (i_np->first) ? T_y(i_np->second) : P_y(i_np->second);
-
+				
 				i_np++;
 			}
 
@@ -1164,19 +1166,25 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub,
 			// overwrite old values with new
 			P_x = n_P_x;
 			P_sigma = n_P_sigma;
-			n_P_y = n_P_y;
-			
+			P_y = n_P_y;
+			/*
+			for (int i = 0; i < mi; i++)
+			{
+				std::cout << P_x(0, i) << " \t" << P_x(1, i) << " \t" << P_sigma(i) << "\t\t" << P_y(i) << '\n';
+			}
+			std::cout << '\n';
+			*/
 			if (solution::f_calls > Nmax)
 			{
 				Xopt.flag = -2;
 
 				break;
 			}
-
+			
 			// with sufficiently low value we exit the loop and return solution
 		} while (m2d(Xopt.y) > epsilon);
 
-		
+		//std::cout << "END\n";
 
 		return Xopt;
 	}

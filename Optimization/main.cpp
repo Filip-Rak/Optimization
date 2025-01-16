@@ -864,34 +864,48 @@ void lab6()
 {
 	const string OUTPUT_PATH = "Output/lab_6/";
 	const string INPUT_PATH = "Input/lab_6/";
-
+	const char delimiter = '\t';
 	matrix 
 		lb(2, std::unique_ptr<double[]>(new double[2] { -5.0, -5.0 }).get()),
 		ub(2, std::unique_ptr<double[]>(new double[2] { 5.0, 5.0 }).get());
 	//return;
-	double epsilon = 1e-4;
+	double epsilon = 1e-2;
 	int mi = 5;
-	int lambd = 5;
-	int Nmax = 1e+8;
-	int correct = 0;
-	int loops = 0;
+	int lambd = 10;
+	int Nmax = 1e+4;
 
 	/* SKIP TO REAL PROBLEM */
-	goto rp;
+	//goto rp;
 
-	while (!correct) {
-		loops++;
-		for (int i = 0; i < 25; i++) {
-			solution::clear_calls();
-			solution x = EA(ff6_T, 2, lb, ub, mi, lambd, 0.01, epsilon, Nmax, NAN, NAN);
-			if (x.flag != -2) {
-				std::cout << x << std::endl;
-				correct++;
+	//solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, 1, epsilon, Nmax);
+
+	//goto tp;
+	{
+		ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
+		if (!tfun_file1.good()) return;
+		int pop = 0;
+		double sigma_v[5] = { 0.01, 0.1, 1., 10., 100. };
+		for (int i = 0; i < 5; i++)
+		{
+			//std::cout << sigma_v[i] << std::endl;
+			for (int j = 0; j < 100; j++)
+			{
+				solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, sigma_v[i], epsilon, Nmax);
+				tfun_file1 << is1.x(0) << delimiter
+					<< is1.x(1) << delimiter 
+					<< is1.y(0) << delimiter 
+					<< solution::f_calls << delimiter 
+					<< (is1.y(0) < epsilon) << std::endl;
+				if (solution::f_calls > Nmax) pop++;
+				solution::clear_calls();
+				
 			}
 		}
-	}
-	std::cout << " correct values scored : " << correct << " times, after " << loops << " loops\n";
 
+		std::cout << "POP: " << pop << std::endl;
+	}
+tp:
+	return;
 	/* Real Problem */
 rp:
 	// Files
