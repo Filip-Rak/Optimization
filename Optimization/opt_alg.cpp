@@ -1200,209 +1200,182 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, in
 {
 	try
 	{
-		// Parametry mutacji samoadaptacyjnej
-		double alpha = std::sqrt((double)N);
-		double beta = std::pow(2.0 * (double)N, -0.25);
 
-		// Zerujemy liczniki (o ile chcemy œledziæ f_calls)
-		solution::clear_calls();
+		static double alpha = std::sqrt((double)N);
+		static double beta = std::pow(2.0 * (double)N, -0.25);
 
-		// ========================
-		// Funkcje do losowania (lokalnie, bez makr)
-		// ========================
-		auto randU = []() -> double {
-			// U(0,1)
+		static std::random_device rd{};
+		static std::mt19937 gen{ rd() };
+
+		static std::normal_distribution<> dst{ 0.0, 1.0 };
+		static double max_gen = static_cast<double>(gen.max());
+		
+		static struct x_y_sigma {
+			matrix x;
+			matrix sigma;
+			double y;
+		};
+
+		const auto init_f = [](const x_y_sigma& a, const x_y_sigma& b) {
+			return (a.y) < (b.y);
+			};
+
+		static auto randU = []() -> double {
 			return (double)rand() / (double)RAND_MAX;
 			};
 
-		auto randN = [&]() -> double {
-			// N(0,1) metod¹ Box-Muller (wersja uproszczona)
+		static auto randN = [&]() -> double {
 			double u1 = randU();
 			double u2 = randU();
 			return sqrt(-2.0 * log(u1)) * cos(2.0 * 3.1415 * u2);
 			};
 
-		// ========================
-		// 1) Inicjalizacja populacji
-		// ========================
-		vector<solution> population(mi);
 
+		std::set<x_y_sigma, decltype(init_f)> P_x_y(init_f);
 		for (int i = 0; i < mi; i++)
 		{
-			// Tworzymy osobnika s z wektorem x (N×1)
-			solution s(matrix(N, 1));
-			// Rezerwujemy w s.ud miejsce na wektor sigma (N×1)
-			s.ud = matrix(N, 1);
+			
+			x_y_sigma init_P = { matrix(N,1), matrix(N,1), 0.0 };
 
-			// Losujemy ka¿d¹ wspó³rzêdn¹ x(d,0) w przedziale [ lb(d,0), ub(d,0) ]
 			for (int d = 0; d < N; d++)
 			{
+				//double r = (double)(gen())/max_gen;
 				double r = randU();
 				double xd = lb(d, 0) + r * (ub(d, 0) - lb(d, 0));
-				s.x(d, 0) = xd;
-				// Pocz¹tkowa sigma
-				s.ud(d, 0) = sigma0;
+				init_P.x(d, 0) = xd;
+				init_P.sigma(d, 0) = sigma0;
 			}
 
-			// Obliczamy wartoœæ funkcji celu:
-			s.fit_fun(ff, ud1, ud2);
-			// => s.y(0,0) bêdzie mieæ f(x)
-
-			population[i] = s;
+			init_P.y = m2d(ff(init_P.x, ud1, ud2));
+			solution::f_calls++;
+			P_x_y.insert(init_P);
 		}
-
-		// Pomocnicza lambda do znalezienia indeksu najlepszego (po s.y(0,0))
-		auto bestIndex = [&](const vector<solution>& pop) {
-			int bIdx = 0;
-			double bVal = pop[0].y(0, 0);
-			for (int j = 1; j < (int)pop.size(); j++)
-			{
-				double val = pop[j].y(0, 0);
-				if (val < bVal)
-				{
-					bVal = val;
-					bIdx = j;
-				}
-			}
-			return bIdx;
-			};
-
-		// ========================
-		// G³ówna pêtla
-		// ========================
+		int i = 0;
+		//std::cout << "pp\n";
 		while (true)
 		{
-			// Sprawdzamy warunek stopu
-			int bIdxPop = bestIndex(population);
-			double fBest = population[bIdxPop].y(0, 0);
 
-			// Czy f(x*) <= epsilon?
-			if (fBest <= epsilon)
+			if (P_x_y.begin()->y <= epsilon)
 			{
-				// Sukces
-				population[bIdxPop].flag = 0;
-				return population[bIdxPop];
+				solution Xopt(P_x_y.begin()->x);
+				Xopt.y = P_x_y.begin()->y;
+				Xopt.flag = 0;
+				return Xopt;
 			}
 
-			// Czy przekroczyliœmy Nmax wywo³añ funkcji celu?
 			if (solution::f_calls >= Nmax)
 			{
-				// Koniec – limit wyczerpany
-				population[bIdxPop].flag = 1;
-				return population[bIdxPop];
+				solution Xopt(P_x_y.begin()->x);
+				Xopt.y = P_x_y.begin()->y;
+				Xopt.flag = 0;
+				return Xopt;
 			}
 
-			// ========================
-			// 2) Ko³o ruletki: fi_j = 1 / f_j
-			// ========================
+			auto first = P_x_y.begin();
+
 			vector<double> fi(mi), q(mi + 1, 0.0);
+			
 			double sumFi = 0.0;
 			for (int j = 0; j < mi; j++)
 			{
-				double fj = population[j].y(0, 0);
-				fi[j] = 1.0 / fj;
-				sumFi += fi[j];
+				sumFi += fi[j] = 1.0 / first->y;
+				first++;
 			}
+
 			for (int j = 1; j <= mi; j++)
 			{
 				q[j] = q[j - 1] + (fi[j - 1] / sumFi);
 			}
 
-			// ========================
-			// 3) Generowanie potomstwa (lambda)
-			// ========================
-			vector<solution> offspring(lambda);
+			std::set<x_y_sigma, decltype(init_f)> T_x_y(init_f);
 
 			for (int off = 0; off < lambda; off++)
 			{
-				// Wybór rodzica A
+
+				//double rA = (double)(gen()) / max_gen;
 				double rA = randU();
-				int idxA = 0;
+				int idA = 0;
 				for (int j = 1; j <= mi; j++)
 				{
 					if (rA <= q[j])
 					{
-						idxA = j - 1;
+						idA = j - 1;
 						break;
 					}
 				}
-				// Wybór rodzica B
+
+				//double rB = (double)(gen()) / max_gen;
 				double rB = randU();
-				int idxB = 0;
+				int idB = 0;
 				for (int j = 1; j <= mi; j++)
 				{
 					if (rB <= q[j])
 					{
-						idxB = j - 1;
+						idB = j - 1;
 						break;
 					}
 				}
 
-				// Krzy¿owanie: child.x(d,0) = A.x(d,0) + (1-rC)*B.x(d,0)
+				x_y_sigma child = { matrix(N,1), matrix(N,1), 0.0 };
+				
+				//double rC = (double)(gen()) / max_gen;
 				double rC = randU();
-				solution child(matrix(N, 1));
-				child.ud = matrix(N, 1);
+
+				auto A = P_x_y.begin();
+				std::advance(A, idA);
+				auto B = P_x_y.begin();
+				std::advance(B, idB);
+
+				//double rG = dst(gen);
+				double rG = randN();
 
 				for (int d = 0; d < N; d++)
 				{
-					double xA = population[idxA].x(d, 0);
-					double xB = population[idxB].x(d, 0);
-					double sA = population[idxA].ud(d, 0);
-					double sB = population[idxB].ud(d, 0);
+					double xA = A->x(d, 0);
+					double xB = B->x(d, 0);
+					double sA = A->sigma(d, 0);
+					double sB = B->sigma(d, 0);
 
-					child.x(d, 0) = xA + (1.0 - rC) * xB;
-					// Sigma np. œrednia
-					child.ud(d, 0) = 0.5 * (sA + sB);
+					child.x(d, 0) = rC * xA + (1.0 - rC) * xB;
+
+					child.sigma(d, 0) = 0.5 * (sA + sB);
 				}
 
-				// Mutacja samoadaptacyjna
-				double globalN = randN(); // globalne N(0,1)
 				for (int d = 0; d < N; d++)
 				{
-					double localN = randN();
-					double sigma_old = child.ud(d, 0);
+					//double rL = dst(gen);
+					double rL = randN();
+					double sigma_old = child.sigma(d, 0);
 
-					// sigma_d = sigma_d * exp(alpha*gN + beta*lN)
-					double sigma_new = sigma_old * exp(alpha * globalN + beta * localN);
-					child.ud(d, 0) = sigma_new;
+					double sigma_new = sigma_old * exp(alpha * rG + beta * rL);
+					child.sigma(d, 0) = sigma_new;
 
-					// x_d = x_d + sigma_d * N(0,1)
-					double step = sigma_new * randN();
+					//double step = sigma_new * dst(gen);
+					double step = randN();
 					child.x(d, 0) += step;
 
 					// Granice
-					if (child.x(d, 0) < lb(d, 0))
+					/*if (child.x(d, 0) < lb(d, 0))
 						child.x(d, 0) = lb(d, 0);
 					if (child.x(d, 0) > ub(d, 0))
-						child.x(d, 0) = ub(d, 0);
+						child.x(d, 0) = ub(d, 0);*/
 				}
 
-				// Obliczamy f(child.x)
-				child.fit_fun(ff, ud1, ud2);
+				child.y = m2d(ff(child.x, ud1, ud2));
+				solution::f_calls++;
+				T_x_y.insert(child);
 
-				offspring[off] = child;
 			}
 
-			// ========================
-			// 4) Selekcja ( ) ->  
-			// ========================
-			vector<solution> combined;
-			combined.reserve(mi + lambda);
+			std::set<x_y_sigma, decltype(init_f)> new_P_x_y(init_f);
 
-			// stare osobniki:
-			for (int i = 0; i < mi; i++)
-				combined.push_back(population[i]);
-			// potomki
-			for (int i = 0; i < lambda; i++)
-				combined.push_back(offspring[i]);
 
-			// Sortowanie rosn¹co po y(0,0)
-			std::sort(combined.begin(), combined.end(),
-				[&](const solution& A, const solution& B) { return A.y(0, 0) < B.y(0, 0); });
+			new_P_x_y.insert(P_x_y.begin(), P_x_y.end());
+			new_P_x_y.insert(T_x_y.begin(), T_x_y.end());
 
-			// Pierwsze mi -> nowa populacja
-			for (int i = 0; i < mi; i++)
-				population[i] = combined[i];
+			P_x_y.clear();
+			P_x_y.insert(new_P_x_y.begin(), std::next(new_P_x_y.begin(),mi));
+
 		}
 	}
 	catch (string ex_info)

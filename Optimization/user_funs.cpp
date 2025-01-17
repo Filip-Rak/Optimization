@@ -755,7 +755,7 @@ double ff6R_error(matrix simulation_results, matrix reference_data)
 	return error;
 }
 
-matrix ff6R(matrix x, matrix ud1, matrix reference_data)
+matrix ff6R(matrix x, matrix ud1, matrix ud2)
 {
 	// Debug: Print the number of function calls
 	static int calls = 0;
@@ -769,5 +769,5 @@ matrix ff6R(matrix x, matrix ud1, matrix reference_data)
 	matrix simulation_results = ff6R_motion(x);
 
 	// Return the error
-	return ff6R_error(simulation_results, reference_data);
+	return ff6R_error(simulation_results, ud2);
 }
