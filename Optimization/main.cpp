@@ -872,14 +872,14 @@ void lab6()
 	double epsilon = 1e-2;
 	int mi = 5;
 	int lambd = 10;
-	int Nmax = 1e+4;
+	int Nmax = 1e+5;
 
 	/* SKIP TO REAL PROBLEM */
-	goto rp;
+	//goto rp;
 
 	//solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, 1, epsilon, Nmax);
 	srand(time(NULL));
-	//goto tp;
+	
 	{
 		ofstream tfun_file1(OUTPUT_PATH + "out_1_tfun.txt");
 		if (!tfun_file1.good()) return;
@@ -887,7 +887,7 @@ void lab6()
 		double sigma_v[5] = { 0.01, 0.1, 1., 10., 100. };
 		for (int i = 0; i < 5; i++)
 		{
-			std::cout << sigma_v[i] << std::endl;
+			//std::cout << sigma_v[i] << std::endl;
 			for (int j = 0; j < 100; j++)
 			{
 				solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, sigma_v[i], epsilon, Nmax);
@@ -904,7 +904,6 @@ void lab6()
 
 		std::cout << "POP: " << pop << std::endl;
 	}
-tp:
 	return;
 	/* Real Problem */
 rp:
