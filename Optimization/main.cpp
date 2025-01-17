@@ -919,7 +919,7 @@ rp:
 	matrix rp_lb(2, std::unique_ptr<double[]>(new double[2] {rp_lower_bound, rp_lower_bound}).get());
 	matrix rp_ub(2, std::unique_ptr<double[]>(new double[2] {rp_upper_bound, rp_upper_bound}).get());
 
-	double rp_epsilon = 1e-1, rp_sigma = 0.1f;
+	double rp_epsilon = 1e-3, rp_sigma = 0.1f;
 	int rp_mi = 5, rp_lambda = 10;
 	int rp_n_max = 1e4, rp_n = 2;
 
@@ -940,7 +940,7 @@ rp:
 	matrix sim_res = ff6R_motion(rp_solution.x);
 	sim_file << sim_res;
 
-	// Print error of simulation
+	// Print the error of simulation
 	matrix error = ff6R_error(sim_res, ref_data);
 	std::cout << "RP_error: " << error << "\n";
 
