@@ -661,82 +661,113 @@ matrix ff6_T(matrix x, matrix ud1, matrix ud2)
 }
 
 /* Real Problem */
-matrix ff6R_derivative(double t, matrix Y, matrix b, matrix k)
+matrix ff6R_derivative(double time, matrix Y, matrix dampness, matrix ud2)
 {
-	// Physical parameters
-	double mass_upper = 5.f, mass_lower = 5.f;
-	double damping_upper = b(0), damping_lower = b(1);
-	double spring_upper = k(0), spring_lower = k(1);
-	double external_force = 1.f;
+	// Physical constants
+	double upper_mass = 5.0, lower_mass = 5.0;
+	double upper_spring = 1.0, spring_coupling = 1.0;
+	double external_force = 1.0;
 
-	// Motion equation
+	// Damping coefficients
+	double upper_damping = dampness(0, 0);
+	double damping_coupling = dampness(1, 0);
+
+	// State
+	double upper_position = Y(0, 0), lower_position = Y(2, 0);
+	double upper_velocity = Y(1, 0), lower_velocity = Y(3, 0);
+
+	// Get acceleration
+	double upper_acceleration = (-upper_damping * upper_velocity - damping_coupling
+		* (upper_velocity - lower_velocity) - upper_spring
+		* upper_position - spring_coupling * (upper_position - lower_position))
+		/ upper_mass;
+
+	double lower_acceleration = (external_force + damping_coupling
+		* (upper_velocity - lower_velocity) + spring_coupling
+		* (upper_position - lower_position))
+		/ lower_mass;
+
+	// Pack derivatives
 	matrix dY(4, 1);
-	dY(0) = Y(1); // dx1 / dt
-	dY(1) = (-damping_upper * Y(1) - damping_lower * (Y(1) - Y(3)) - spring_upper * Y(0) - spring_lower * (Y(0) - Y(2))) / mass_upper;
-	dY(2) = Y(3); // dx2 / dt
-	dY(3) = (external_force - damping_lower * (Y(1) - Y(3)) - spring_lower * (Y(0) - Y(2))) / mass_lower;
+	dY(0, 0) = upper_velocity;
+	dY(1, 0) = upper_acceleration;
+	dY(2, 0) = lower_velocity;
+	dY(3, 0) = lower_acceleration;
+
+	// Return derivatives
 	return dY;
 }
 
-matrix ff6R_motion(matrix b, matrix k)
+matrix ff6R_motion(matrix dampness)
 {
-	// Starting conditions
-	double upper_position = 0.f, upper_speed = 0.f;
-	double lower_position = 0.f, lower_speed = 0.f;
-	matrix Y0 = matrix(4, new double[4] {upper_position, upper_speed, lower_position, lower_speed});
+	// Damping coefficients
+	double upper_damping = dampness(0, 0);
+	double damping_coupling = dampness(1, 0);
 
 	// Time parameters
 	double start_time = 0.0;
-	double end_time = 100.0;
+	double stop_time = 100.0;
 	double time_step = 0.1;
 
-	// Solve diferential equation
-	// [u_pos, u_speed, l_pos, l_speed]
-	matrix* results = solve_ode(ff6R_derivative, start_time, time_step, end_time, Y0, b, k);
+	// Initial state
+	double upper_position = 0.0, lower_position = 0.0;
+	double upper_velocity = 0.0, lower_velocity = 0.0;
+	matrix Y0(4, new double[4]{upper_position, upper_velocity, lower_position, lower_velocity});
 
-	// Extract position
+	// Solve differential equation
+	matrix* solution = solve_ode(ff6R_derivative, start_time, time_step, stop_time, Y0, dampness);
+	
+	// Only copy the positions
 	int rows = 1001;
 	matrix positions(rows, 2);
 
 	for (int i = 0; i < rows; i++)
 	{
-		positions(i, 0) = results[1](i, 0); // u_pos
-		positions(i, 1) = results[1](i, 2); // l_pos
+		positions(i, 0) = solution[1](i, 0);
+		positions(i, 1) = solution[1](i, 2);
 	}
 
-	// Return results of position in time
+	delete[] solution;
+
+	// Return the positions
 	return positions;
 }
 
-matrix ff6R_error(matrix simulation_results, matrix experimental_data)
+double ff6R_error(matrix simulation_results, matrix reference_data)
 {
-	double error = 0.0;
-	// Read the number of rows
-	int* size = get_size(simulation_results);
+	// Get the size of the matrix
+	int *size = get_size(simulation_results);
 	int rows = size[0];
 	delete[] size;
 
+	// Calculate error
+	double error = 0.0;
 	for (int i = 0; i < rows; ++i)
 	{
-		error += pow(simulation_results(i, 0) - experimental_data(i, 0), 2); // Squared error
-		error += pow(simulation_results(i, 1) - experimental_data(i, 1), 2);
+		double sim_upper_pos = simulation_results(i, 0);
+		double sim_lower_pos = simulation_results(i, 1);
+		double ref_upper_pos = reference_data(i, 0);
+		double ref_lower_pos = reference_data(i, 1);
+
+		error += pow(sim_upper_pos - ref_upper_pos, 2) + pow(sim_lower_pos - ref_lower_pos, 2);
 	}
 
-	// Return average error
-	return matrix(sqrt(error / rows));
+	return error;
 }
 
-matrix ff6R(matrix b, matrix experimental_data, matrix k)
+matrix ff6R(matrix x, matrix ud1, matrix ud2)
 {
+	// Debug: Print the number of function calls
 	static int calls = 0;
 	calls += 1;
 	if (calls % 100 == 0)
+	{
 		std::cout << "ff6R calls: " << calls << "\n";
-		 
+	}
 
-	// Simulate motion for given b parameters
-	matrix simulation_results = ff6R_motion(b, k);
+	// Run simulation for given dampness coefficients
+	matrix simulation_results = ff6R_motion(x);
 
-	// Return the error between simulation and experiment
-	return ff6R_error(simulation_results, experimental_data);
+	// Return the error
+	return ff6R_error(simulation_results, ud2);
 }
