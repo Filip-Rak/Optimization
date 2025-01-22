@@ -875,7 +875,7 @@ void lab6()
 	int Nmax = 1e+5;
 
 	/* SKIP TO REAL PROBLEM */
-	//goto rp;
+	goto rp;
 
 	//solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, 1, epsilon, Nmax);
 	srand(time(NULL));
@@ -904,7 +904,7 @@ void lab6()
 
 		std::cout << "POP: " << pop << std::endl;
 	}
-	return;
+	// return;
 	/* Real Problem */
 rp:
 	// Files
@@ -918,7 +918,7 @@ rp:
 	matrix rp_lb(2, std::unique_ptr<double[]>(new double[2] {rp_lower_bound, rp_lower_bound}).get());
 	matrix rp_ub(2, std::unique_ptr<double[]>(new double[2] {rp_upper_bound, rp_upper_bound}).get());
 
-	double rp_epsilon = 1e-1, rp_sigma = 0.1f;
+	double rp_epsilon = 1e-2, rp_sigma = 0.1f;
 	int rp_mi = 5, rp_lambda = 10;
 	int rp_n_max = 1e4, rp_n = 2;
 
