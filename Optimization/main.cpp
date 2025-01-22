@@ -909,7 +909,7 @@ void lab6()
 rp:
 	// Files
 	ifstream ref_file(INPUT_PATH + "positions.txt");
-	ofstream rp_opt_file(INPUT_PATH + "out_rp1_opt.txt");
+	ofstream rp_opt_file(OUTPUT_PATH + "out_rp1_opt.txt");
 	ofstream sim_file(OUTPUT_PATH + "out_rp2_sim.txt");
 
 	// Optimizer settings
