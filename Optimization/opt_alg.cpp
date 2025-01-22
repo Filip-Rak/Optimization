@@ -1338,7 +1338,7 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix lb, matrix ub, in
 
 					child.x(d, 0) = rC * xA + (1.0 - rC) * xB;
 
-					child.sigma(d, 0) = 0.5 * (sA + sB);
+					child.sigma(d, 0) = rC * sA + (1.0 - rC) * sB;
 				}
 
 				for (int d = 0; d < N; d++)
