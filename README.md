@@ -3,15 +3,13 @@ This repository contains a large-scale C++ project developed as part of the **Op
 
 ---
 
-[Image](media)
+![Image](Media/cg_method.png)
 
 # Authors
 
 - **[Arek](https://github.com/arekan144)**: Implementation of optimization algorithms, test exercises for algorithm validation, and the contributions to spreadsheet for results.
 - **[Filip](https://github.com/Filip-Rak)**: Implementation of the real-world problem exercises, focusing on practical applications of optimization methods, as well as contributions to the spreadsheet for results and graphs.
 - **[Paulina](https://github.com/paulina-grab-owska)**: Responsible for compiling the lengthy coursework report, documenting the optimization process, methodology, and results of the project in detail.
-  
-- **dr. inż. Łukasz Sztangret**: Provided the foundational framework and guidance for the project.
 
 This project was a collaborative effort, with each team member contributing their unique expertise to ensure that the solution was both comprehensive and effective.
 
@@ -84,7 +82,9 @@ root/
 ├── Optimization/            # Optimization project framework and related files
 │   ├── Input/               # Input files for each assignment
 │   ├── Output/              # Output files for each assignment
-│
+|
+├── Media/                   # Various media for README.md file
+|
 └── README.md                # This file
 ```
 
