@@ -1,11 +1,11 @@
 # Overview
 This repository contains a large-scale C++ project developed as part of the **Optimization** course during the fifth semester at **AGH University of Krakow**. The project is a collaborative group assignment, where we worked in groups of three. The goal was to implement various optimization methods within a given framework.
 
----
-
 ![Conjugate Gradient Method graph](Media/cg_method.png)
 
 *Conjugate Gradient Method with different step size configurations*
+
+---
 
 # Authors
 
