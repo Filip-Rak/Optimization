@@ -71,8 +71,28 @@ The framework is organized into separate `.cpp` and `.h` files for each componen
 
 # Repository Structure
 
+```
+root/
+├── Coursework-Reports/      # Contains the results for each lab assignment
+│   ├── 1st-assignment/      # Spreadsheet and report for the 1st assignment
+│   ├── 2nd-assignment/      # Spreadsheet and report for the 2nd assignment
+│   ├── 3rd-assignment/      # Spreadsheet and report for the 3rd assignment
+│   ├── 4th-assignment/      # Spreadsheet and report for the 4th assignment
+│   ├── 5th-assignment/      # Spreadsheet and report for the 5th assignment
+│   └── 6th-assignment/      # Spreadsheet and report for the 6th assignment
+│
+├── Optimization/            # Optimization project framework and related files
+│   ├── Input/               # Input files for each assignment
+│   ├── Output/              # Output files for each assignment
+│
+└── README.md                # This file
+```
+
 ---
 
 # Installation
+
+1. Open **Visual Studio** and click **"Clone a repository"**.
+2. Paste the project's URL as the location: https://github.com/Filip-Rak/Optimization
 
 ---
