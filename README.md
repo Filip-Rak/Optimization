@@ -1,5 +1,5 @@
 # Overview
-This repository contains a large-scale C++ project developed as part of the **Optimization** course during the fifth semester at **AGH University of Krakow**. The project is a collaborative group assignment, where we worked in groups of three. The goal was to implement various optimization methods within a given framework.
+This repository contains a C++ project developed as part of the **Optimization** course during the fifth semester at **AGH University of Krakow**. The project is a collaborative group assignment, where we worked in groups of three. The goal was to implement various optimization methods within a given framework.
 
 ![Conjugate Gradient Method graph](Media/cg_method.png)
 
@@ -9,8 +9,8 @@ This repository contains a large-scale C++ project developed as part of the **Op
 
 # Authors
 
-- **[Arek](https://github.com/arekan144)**: Implementation of optimization algorithms, test exercises for algorithm validation, and the contributions to spreadsheet for results.
-- **[Filip](https://github.com/Filip-Rak)**: Implementation of the real-world problem exercises, focusing on practical applications of optimization methods, as well as contributions to the spreadsheet for results and graphs.
+- **[Arek](https://github.com/arekan144)**: Implementation of optimization algorithms, test exercises for algorithm validation, and contributions to result spreadsheets.
+- **[Filip](https://github.com/Filip-Rak)**: Implementation of the real-world problem exercises, focusing on practical applications of optimization methods, as well as contributions to result spreadhseets.
 - **[Paulina](https://github.com/paulina-grab-owska)**: Responsible for compiling the lengthy coursework report, documenting the optimization process, methodology, and results of the project in detail.
 
 This project was a collaborative effort, with each team member contributing their unique expertise to ensure that the solution was both comprehensive and effective.
