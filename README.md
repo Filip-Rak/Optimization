@@ -3,7 +3,9 @@ This repository contains a large-scale C++ project developed as part of the **Op
 
 ---
 
-![Image](Media/cg_method.png)
+![Conjugate Gradient Method graph](Media/cg_method.png)
+
+*Conjugate Gradient Method with different step size configurations*
 
 # Authors
 
