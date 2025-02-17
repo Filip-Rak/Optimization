@@ -41,12 +41,38 @@ This project was a collaborative effort, with each team member contributing thei
 
 # Framework 
 
+The framework for this project was provided by our teacher **dr. inż. Łukasz Sztangret**, who also guided us throughout the development process. The framework is designed to facilitate the implementation and testing of various optimization methods. Below is an overview of its key components:
+
+1. **Matrix Class**
+- Represents a comprehensive matrix implementation with overloaded operators, friend functions, and various utility methods for ease of use.
+- Simplifies matrix operations such as addition, multiplication, and inversion, which are often required in optimization algorithms.
+
+2. **Solution Class**
+- Represents the result of an optimization process.
+- Stores important data about the solution, including:
+    - The optimized values of x (input variables) and y (objective function value).
+    - The number of function calls made during optimization.
+
+3. **solve_ode File**
+- Implements the 4th-order Runge-Kutta method for solving ordinary differential equations (ODEs).
+
+4. **opt_alg File**
+- Contains all optimization methods implemented in the project.
+
+5. **user_funs File**
+- Contains user-defined functions related to the exercises, including both test functions and real-world problem functions
+
+6. **Main File**
+- Implements the logic for calculating solutions for each lab exercise
+
+The framework is organized into separate `.cpp` and `.h` files for each component
+
 ---
 
 # Repository Structure
 
 ---
 
-# Installtion
+# Installation
 
 ---
