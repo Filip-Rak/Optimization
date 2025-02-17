@@ -10,7 +10,9 @@ This repository contains a C++ project developed as part of the **Optimization**
 # Authors
 
 - **[Arek](https://github.com/arekan144)**: Implementation of optimization algorithms, test exercises for algorithm validation, and contributions to result spreadsheets.
+  
 - **[Filip](https://github.com/Filip-Rak)**: Implementation of the real-world problem exercises, focusing on practical applications of optimization methods, as well as contributions to result spreadhseets.
+  
 - **[Paulina](https://github.com/paulina-grab-owska)**: Responsible for compiling the lengthy coursework report, documenting the optimization process, methodology, and results of the project in detail.
 
 This project was a collaborative effort, with each team member contributing their unique expertise to ensure that the solution was both comprehensive and effective.
