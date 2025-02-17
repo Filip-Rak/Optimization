@@ -875,7 +875,7 @@ void lab6()
 	int Nmax = 1e+5;
 
 	/* SKIP TO REAL PROBLEM */
-	//goto rp;
+	goto rp;
 
 	//solution is1 = EA(ff6_T, 2, lb, ub, mi, lambd, 1, epsilon, Nmax);
 	srand(time(NULL));
@@ -904,7 +904,7 @@ void lab6()
 
 		std::cout << "POP: " << pop << std::endl;
 	}
-	return;
+	// return;
 	/* Real Problem */
 rp:
 	// Files
