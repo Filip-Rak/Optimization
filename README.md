@@ -98,5 +98,3 @@ root/
 
 1. Open **Visual Studio** and click **"Clone a repository"**.
 2. Paste the project's URL as the location: https://github.com/Filip-Rak/Optimization
-
----
